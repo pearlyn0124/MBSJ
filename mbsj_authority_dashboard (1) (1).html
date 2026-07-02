@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBSJ Smart Aduan - Portal Pentadbir & Pihak Berkuasa</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mbsj: {
+              blue: '#002D62',     /* Royal Navy Blue */
+              yellow: '#FFCC00',   /* Bright MBSJ Gold */
+              darkBlue: '#001F43', /* Darker Navy */
+              goldLight: '#FFF2CC',/* Light Yellow highlight */
+              neutralGray: '#F4F6F9',
+              accentRed: '#D9534F'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js for high fidelity visual insights -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #F3F4F6;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1F1F1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #002D62;
+      border-radius: 10px;
+    }
+    /* Simple CSS pulse for hot spots */
+    .pulse-pin {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased flex flex-col min-h-screen">
+
+  <!-- ==================== TOP GOVERNMENT UTILITY BANNER ==================== -->
+  <div class="bg-mbsj-darkBlue text-white text-xs py-1.5 px-4 md:px-8 flex justify-between items-center border-b border-mbsj-yellow/30">
+    <div class="flex items-center space-x-4">
+      <span class="flex items-center text-mbsj-yellow"><i class="fa-solid fa-building-flag mr-1.5"></i> PORTAL RASMI MAJLIS BANDARAYA SUBANG JAYA</span>
+      <span class="hidden md:inline text-gray-300">|</span>
+      <span class="hidden md:inline text-gray-300">Kawasan Pentadbiran: Subang Jaya, USJ, Putra Heights, Bandar Sunway, Seri Kembangan, Puchong</span>
+    </div>
+    <div class="flex items-center space-x-3">
+      <button onclick="toggleLanguage('ms')" id="lang-ms" class="text-mbsj-yellow font-semibold underline">BM</button>
+      <span class="text-gray-400">/</span>
+      <button onclick="toggleLanguage('en')" id="lang-en" class="text-gray-300 hover:text-white">EN</button>
+      <span class="mx-2 text-gray-500">|</span>
+      <div class="flex items-center text-emerald-400">
+        <span class="h-2 w-2 rounded-full bg-emerald-400 inline-block mr-1.5 animate-pulse"></span>
+        <span id="txt-sys-online">Sistem Aktif</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN HEADER (MBSJ STYLE) ==================== -->
+  <header class="bg-mbsj-blue text-white shadow-md sticky top-0 z-40 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4">
+      
+      <!-- Brand & Logos -->
+      <div class="flex items-center space-x-4">
+        <!-- MBSJ Crest Simulated with CSS Shapes & Text representation to prevent broken image links -->
+        <div class="h-14 w-14 bg-white rounded-full border-2 border-mbsj-yellow flex flex-col items-center justify-center p-1 shadow-inner relative shrink-0">
+          <div class="text-[9px] font-extrabold text-blue-900 leading-none text-center">MBSJ</div>
+          <i class="fa-solid fa-shield-halved text-mbsj-blue text-sm mt-0.5"></i>
+          <div class="text-[6px] text-amber-500 font-bold uppercase tracking-widest mt-0.5">Vibrant</div>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            PORTAL PENGURUSAN ADUAN INFRASTRUKTUR
+            <span class="bg-mbsj-yellow text-mbsj-darkBlue text-[11px] font-black px-2 py-0.5 rounded tracking-normal">STAF</span>
+          </h1>
+          <p class="text-xs text-gray-200 mt-0.5" id="header-subtitle">Majlis Bandaraya Subang Jaya — Kawalan Lekukan Jalan & Saluran Parit Tersumbat</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Stats & Officer Profile -->
+      <div class="flex items-center space-x-4">
+        <div class="hidden lg:flex flex-col text-right">
+          <span class="text-xs text-mbsj-yellow font-semibold" id="txt-welcome-role">Pegawai Kejuruteraan Zon 4</span>
+          <span class="text-sm font-medium" id="txt-officer-name">Encik Khairul Azwan</span>
+        </div>
+        <div class="h-10 w-10 bg-mbsj-yellow text-mbsj-darkBlue font-bold rounded-full flex items-center justify-center border-2 border-white shadow shadow-mbsj-yellow/50">
+          KA
+        </div>
+        <button onclick="logOutAdmin()" class="bg-mbsj-darkBlue hover:bg-mbsj-accentRed transition duration-200 px-3 py-1.5 rounded-lg text-xs border border-white/20 flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline" id="btn-logout">Log Keluar</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTAINER ==================== -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ==================== ALERTS / NOTICES FEED ==================== -->
+    <div class="bg-mbsj-goldLight border-l-4 border-mbsj-yellow p-4 rounded-r-xl shadow-sm flex items-start space-x-3">
+      <div class="text-mbsj-blue text-xl pt-0.5 shrink-0">
+        <i class="fa-solid fa-circle-exclamation animate-bounce"></i>
+      </div>
+      <div class="flex-grow">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-mbsj-blue text-sm md:text-base" id="notif-title">Peringatan Tindakan Segera Amaran Cuaca / Hujan Lebat</h4>
+          <span class="text-xs text-gray-600 font-medium">Hari Ini, 4:15 PM</span>
+        </div>
+        <p class="text-xs text-gray-700 mt-1" id="notif-desc">
+          Amaran hujan lebat di USJ & Puchong Jaya petang ini. Pasukan Respon Pantas MBSJ (Geng Merah) bersiap sedia untuk aduan lubang jalan berisiko tinggi dan parit tersumbat limpahan air segera.
+        </p>
+      </div>
+    </div>
+
+    <!-- ==================== ANALYTICS SUMMARY GRID ==================== -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <!-- Total Reports Card -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider" id="lbl-kpi-total">Jumlah Aduan</p>
+            <h3 class="text-2xl md:text-3xl font-extrabold text-mbsj-blue mt-1" id="stat-total">142</h3>
+          </div>
+          <span class="p-2 bg-blue-50 text-mbsj-blue rounded-lg text-lg"><i class="fa-solid fa-folder-open"></i></span>
+        </div>
+        <div class="text-[11px] text-gray-500 mt-3 flex items-center gap-1">
+          <span class="text-emerald-500 font-bold"><i class="fa-solid fa-arrow-up"></i> 8.4%</span>
+          <span id="lbl-kpi-sub-total">daripada bulan lepas</span>
+        </div>
+      </div>
+
+      <!-- Pothole Complaints -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider" id="lbl-kpi-pothole">Aduan Jalan Raya</p>
+            <h3 class="text-2xl md:text-3xl font-extrabold text-amber-600 mt-1" id="stat-pothole">84</h3>
+          </div>
+          <span class="p-2 bg-amber-50 text-amber-600 rounded-lg text-lg"><i class="fa-solid fa-road-barrier"></i></span>
+        </div>
+        <div class="text-[11px] text-gray-500 mt-3 flex items-center gap-1">
+          <span class="text-amber-500 font-bold" id="stat-pothole-open">45 Baru & Proses</span>
+        </div>
+      </div>
+
+      <!-- Clogged Drains Complaints -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider" id="lbl-kpi-drain">Parit Tersumbat</p>
+            <h3 class="text-2xl md:text-3xl font-extrabold text-cyan-600 mt-1" id="stat-drain">58</h3>
+          </div>
+          <span class="p-2 bg-cyan-50 text-cyan-600 rounded-lg text-lg"><i class="fa-solid fa-faucet-drip"></i></span>
+        </div>
+        <div class="text-[11px] text-gray-500 mt-3 flex items-center gap-1">
+          <span class="text-cyan-500 font-bold" id="stat-drain-open">23 Baru & Proses</span>
+        </div>
+      </div>
+
+      <!-- Resolved Rate -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5 col-span-1">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider" id="lbl-kpi-resolved">Kadar Selesai</p>
+            <h3 class="text-2xl md:text-3xl font-extrabold text-emerald-600 mt-1" id="stat-resolved-rate">81.3%</h3>
+          </div>
+          <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg text-lg"><i class="fa-solid fa-circle-check"></i></span>
+        </div>
+        <div class="text-[11px] text-gray-500 mt-3 flex items-center gap-1">
+          <span class="text-emerald-500 font-bold" id="stat-resolved-num">115 kes berjaya ditutup</span>
+        </div>
+      </div>
+
+      <!-- Average Response Time -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5 col-span-2 lg:col-span-1">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider" id="lbl-kpi-time">Masa Tindak Balas</p>
+            <h3 class="text-2xl md:text-3xl font-extrabold text-indigo-600 mt-1">2.4 Hari</h3>
+          </div>
+          <span class="p-2 bg-indigo-50 text-indigo-600 rounded-lg text-lg"><i class="fa-solid fa-bolt"></i></span>
+        </div>
+        <div class="text-[11px] text-indigo-500 font-bold mt-3" id="lbl-kpi-time-sub">
+          MBSJ Sasaran: Bawah 3 Hari
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== MIDDLE SECTION: INTERACTIVE SUBANG MAP & CHARTS ==================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Interactive Zonal Map (Subang Jaya Boundaries) -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full lg:col-span-2">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="font-bold text-mbsj-blue text-base flex items-center gap-1.5">
+              <i class="fa-solid fa-map-location-dot"></i> <span id="lbl-map-title">Peta Interaktif Aduan Subang Jaya</span>
+            </h3>
+            <p class="text-xs text-gray-500" id="lbl-map-subtitle">Klik pada zon atau pin aduan untuk tapis senarai tugasan di bawah</p>
+          </div>
+          <button onclick="resetMapFilter()" class="text-xs font-semibold text-mbsj-blue hover:text-mbsj-yellow bg-mbsj-neutralGray px-2.5 py-1.5 rounded transition">
+            <i class="fa-solid fa-rotate-left mr-1"></i> <span id="btn-reset-map">Set Semula Peta</span>
+          </button>
+        </div>
+
+        <!-- Custom Interactive Vector Map of Subang Jaya (SVG) with detailed aesthetic features -->
+        <div class="bg-slate-900 rounded-xl relative overflow-hidden border border-slate-800 flex-grow flex items-center justify-center p-2 min-h-[300px] lg:min-h-[380px]">
+          
+          <!-- Background Grid Overlay for premium feel -->
+          <div class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+
+          <!-- The Beautiful SVG Map Boundaries of Subang Jaya Districts -->
+          <svg viewBox="0 0 800 500" class="w-full h-full max-h-[380px] drop-shadow-lg" id="svg-subang-map">
+            
+            <!-- Map Boundaries with hover interaction -->
+            <!-- SS15 & SS12 & SS18 -->
+            <path d="M 120 100 L 320 100 L 300 220 L 100 220 Z" fill="#1e293b" stroke="#334155" stroke-width="2" class="cursor-pointer hover:fill-indigo-950 transition duration-300" onclick="filterBySubangDistrict('SS15 / SS12')" id="district-ss15"></path>
+            <!-- USJ 1 to USJ 8 -->
+            <path d="M 100 220 L 300 220 L 280 340 L 80 340 Z" fill="#1e293b" stroke="#334155" stroke-width="2" class="cursor-pointer hover:fill-blue-950 transition duration-300" onclick="filterBySubangDistrict('USJ Utara')" id="district-usjutara"></path>
+            <!-- USJ 9 to USJ 24 -->
+            <path d="M 80 340 L 280 340 L 260 480 L 60 480 Z" fill="#1e293b" stroke="#334155" stroke-width="2" class="cursor-pointer hover:fill-sky-950 transition duration-300" onclick="filterBySubangDistrict('USJ Selatan')" id="district-usjselatan"></path>
+            <!-- Bandar Sunway -->
+            <path d="M 320 100 L 520 120 L 490 230 L 300 220 Z" fill="#1e293b" stroke="#334155" stroke-width="2" class="cursor-pointer hover:fill-amber-950/70 transition duration-300" onclick="filterBySubangDistrict('Bandar Sunway')" id="district-sunway"></path>
+            <!-- Puchong (Subang Jaya Border) -->
+            <path d="M 490 230 L 720 250 L 680 470 L 450 450 Z" fill="#1e293b" stroke="#334155" stroke-width="2" class="cursor-pointer hover:fill-emerald-950/70 transition duration-300" onclick="filterBySubangDistrict('Puchong (MBSJ Area)')" id="district-puchong"></path>
+            <!-- Putra Heights -->
+            <path d="M 260 410 L 450 410 L 450 480 L 260 480 Z" fill="#1e293b" stroke="#334155" stroke-width="2" class="cursor-pointer hover:fill-rose-950/70 transition duration-300" onclick="filterBySubangDistrict('Putra Heights')" id="district-putraheights"></path>
+
+            <!-- Text Labels on Map -->
+            <text x="210" y="160" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="middle" pointer-events="none">SS15 / SS12</text>
+            <text x="190" y="280" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="middle" pointer-events="none">USJ UTARA</text>
+            <text x="170" y="410" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="middle" pointer-events="none">USJ SELATAN</text>
+            <text x="410" y="170" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="middle" pointer-events="none">BANDAR SUNWAY</text>
+            <text x="590" y="350" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="middle" pointer-events="none">PUCHONG</text>
+            <text x="350" y="450" fill="#94a3b8" font-size="14" font-weight="600" text-anchor="middle" pointer-events="none">PUTRA HEIGHTS</text>
+          </svg>
+
+          <!-- Hotspots dynamically plotted as pins (Representing live pothole and clogged drain complaints) -->
+          <!-- Pin 1: SS15 Pothole -->
+          <div class="absolute cursor-pointer transition duration-300 hover:scale-125 select-none" style="top: 30%; left: 24%;" onclick="viewComplaintById('AD-8041')" title="Lekukan Besar Jalan SS15/4">
+            <span class="absolute inline-flex h-6 w-6 rounded-full bg-amber-500 opacity-60 pulse-pin"></span>
+            <span class="relative flex h-3 w-3 rounded-full bg-amber-600 border border-white"></span>
+          </div>
+
+          <!-- Pin 2: USJ Utara Drain -->
+          <div class="absolute cursor-pointer transition duration-300 hover:scale-125 select-none" style="top: 55%; left: 26%;" onclick="viewComplaintById('AD-9102')" title="Parit Sumbat USJ 4/2">
+            <span class="absolute inline-flex h-6 w-6 rounded-full bg-cyan-500 opacity-60 pulse-pin"></span>
+            <span class="relative flex h-3 w-3 rounded-full bg-cyan-600 border border-white"></span>
+          </div>
+
+          <!-- Pin 3: Sunway Clogged Drain -->
+          <div class="absolute cursor-pointer transition duration-300 hover:scale-125 select-none" style="top: 38%; left: 52%;" onclick="viewComplaintById('AD-7049')" title="Limpahan Air Jalan PJS 11/15">
+            <span class="absolute inline-flex h-6 w-6 rounded-full bg-cyan-500 opacity-60 pulse-pin"></span>
+            <span class="relative flex h-3 w-3 rounded-full bg-cyan-600 border border-white"></span>
+          </div>
+
+          <!-- Pin 4: Puchong Pothole -->
+          <div class="absolute cursor-pointer transition duration-300 hover:scale-125 select-none" style="top: 70%; left: 74%;" onclick="viewComplaintById('AD-5511')" title="Lubang Dalam Lebuhraya Damansara Puchong (LDP)">
+            <span class="absolute inline-flex h-6 w-6 rounded-full bg-red-500 opacity-60 pulse-pin"></span>
+            <span class="relative flex h-3 w-3 rounded-full bg-red-600 border border-white"></span>
+          </div>
+
+          <!-- Map Legend -->
+          <div class="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur border border-slate-800 text-white rounded-lg p-2.5 text-[11px] space-y-1">
+            <div class="font-bold border-b border-gray-800 pb-1 mb-1" id="lbl-legend-title">Petunjuk Status</div>
+            <div class="flex items-center space-x-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+              <span id="lbl-leg-pothole">Aduan Lekukan Jalan</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-cyan-500"></span>
+              <span id="lbl-leg-drain">Aduan Parit Tersumbat</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></span>
+              <span id="lbl-leg-high">Kecemasan / Keutamaan Tinggi</span>
+            </div>
+          </div>
+
+          <!-- Selected District Info badge -->
+          <div id="map-selection-badge" class="absolute top-3 left-3 bg-mbsj-yellow text-mbsj-darkBlue font-bold text-xs py-1.5 px-3 rounded-lg shadow-md hidden flex items-center space-x-2">
+            <span>Zon: <span id="map-selected-zone-name">USJ Selatan</span></span>
+            <button onclick="resetMapFilter()" class="text-xs bg-mbsj-darkBlue text-white rounded-full p-0.5 w-4 h-4 flex items-center justify-center">×</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Quick Analysis Chart & System Logs -->
+      <div class="flex flex-col space-y-6">
+        
+        <!-- Live Statistics Card (Chart.js) -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div>
+            <h4 class="font-bold text-mbsj-blue text-sm md:text-base flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie"></i> <span id="lbl-chart-title">Analisis Aduan Mengikut Mukim</span>
+            </h4>
+            <p class="text-xs text-gray-500" id="lbl-chart-subtitle">Statistik laporan aktif bulan ini</p>
+          </div>
+          <div class="mt-4 relative h-[180px] w-full flex items-center justify-center">
+            <canvas id="complaintsChart" class="max-h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Submit Internal Dispatch / Quick Manual Entry -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+          <h4 class="font-bold text-mbsj-blue text-sm md:text-base flex items-center gap-1.5">
+            <i class="fa-solid fa-square-plus"></i> <span id="lbl-log-new">Daftar Aduan Baru (Walk-in / Telefon)</span>
+          </h4>
+          <p class="text-xs text-gray-500 mb-4" id="lbl-log-new-sub">Gunakan borang ini jika terima aduan terus daripada penduduk</p>
+          
+          <button onclick="openNewComplaintModal()" class="w-full bg-mbsj-blue hover:bg-mbsj-darkBlue text-white font-semibold py-2.5 px-4 rounded-xl transition duration-200 text-xs flex items-center justify-center space-x-2 shadow-sm">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span id="btn-open-form-aduan">Buka Borang Pendaftaran</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== COMPLAINTS WORKSPACE & FILTERS ==================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      
+      <!-- Filter Bar -->
+      <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h3 class="font-bold text-mbsj-blue text-base flex items-center gap-2">
+            <i class="fa-solid fa-list-check"></i> <span id="lbl-workspace-title">Papan Kerja Aduan Berpusat</span>
+          </h3>
+          <p class="text-xs text-gray-500" id="lbl-workspace-sub">Urus, pantau, dan selesaikan masalah jalan raya dan parit tersumbat</p>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <!-- Filter Search -->
+          <div class="relative w-full sm:w-48 md:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+            <input type="text" id="search-input" onkeyup="filterComplaints()" placeholder="Cari aduan..." class="w-full pl-8 pr-4 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-mbsj-blue text-xs">
+          </div>
+
+          <!-- Type Filter -->
+          <select id="filter-type" onchange="filterComplaints()" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-mbsj-blue">
+            <option value="all" id="opt-all-type">Semua Kategori</option>
+            <option value="Jalan Raya" id="opt-pothole">Jalan Raya (Lekukan)</option>
+            <option value="Parit" id="opt-drain">Parit / Saliran</option>
+          </select>
+
+          <!-- Status Filter -->
+          <select id="filter-status" onchange="filterComplaints()" class="bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-mbsj-blue">
+            <option value="all" id="opt-all-status">Semua Status</option>
+            <option value="Baru" id="opt-baru">Baru</option>
+            <option value="Dalam Siasatan" id="opt-investigation">Dalam Siasatan</option>
+            <option value="Selesai" id="opt-resolved">Selesai</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Live Interactive Table -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-mbsj-blue text-white text-xs uppercase tracking-wider font-semibold">
+              <th class="py-3.5 px-4" id="th-id">No. Rujukan</th>
+              <th class="py-3.5 px-4" id="th-details">Butiran Kes</th>
+              <th class="py-3.5 px-4" id="th-location">Lokasi & Tarikh</th>
+              <th class="py-3.5 px-4" id="th-priority">Keutamaan</th>
+              <th class="py-3.5 px-4" id="th-team">Kontraktor / Skuad</th>
+              <th class="py-3.5 px-4" id="th-status">Status</th>
+              <th class="py-3.5 px-4 text-center" id="th-action">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="complaints-table-body" class="divide-y divide-gray-100 text-xs">
+            <!-- Dynamic rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Empty State -->
+      <div id="table-empty-state" class="hidden py-12 text-center text-gray-500">
+        <i class="fa-solid fa-folder-open text-4xl text-gray-300 mb-3 block"></i>
+        <p class="font-semibold text-sm" id="lbl-no-data">Tiada rekod aduan ditemui</p>
+        <p class="text-xs text-gray-400" id="lbl-no-data-sub">Cuba tukar penapis atau cari rujukan lain.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== AI SIDE-PANEL / COPILOT DRAWER ==================== -->
+  <div id="ai-copilot-drawer" class="fixed inset-y-0 right-0 w-full sm:w-[500px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-200 flex flex-col">
+    
+    <!-- Drawer Header -->
+    <div class="bg-gradient-to-r from-mbsj-blue to-mbsj-darkBlue text-white p-4 flex justify-between items-center border-b border-mbsj-yellow/40">
+      <div class="flex items-center space-x-2">
+        <div class="h-8 w-8 bg-mbsj-yellow text-mbsj-darkBlue rounded-full flex items-center justify-center font-bold">
+          <i class="fa-solid fa-robot animate-pulse"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-sm tracking-tight">MBSJ AI Copilot Siasatan</h3>
+          <p class="text-[10px] text-mbsj-yellow" id="lbl-ai-status">Analisis Keutamaan & Draf Maklumbalas</p>
+        </div>
+      </div>
+      <button onclick="closeAICopilot()" class="text-white hover:text-mbsj-yellow text-xl p-1">&times;</button>
+    </div>
+
+    <!-- Drawer Content -->
+    <div class="flex-grow overflow-y-auto p-5 space-y-5 custom-scrollbar bg-slate-50">
+      
+      <!-- Target Complaint summary -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-mono font-bold text-mbsj-blue" id="ai-active-id">AD-0000</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-amber-800" id="ai-active-type">Kategori</span>
+        </div>
+        <p class="font-semibold text-gray-800 mt-2 text-xs" id="ai-active-title">Tajuk Laporan</p>
+        <p class="text-gray-500 text-[11px] mt-1 italic" id="ai-active-desc">"Deskripsi aduan penduduk..."</p>
+      </div>
+
+      <!-- Quick Analysis Metrics -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white p-3 rounded-xl border border-gray-100">
+          <span class="text-[10px] text-gray-400 block" id="lbl-ai-hazard">Analisis Risiko</span>
+          <span class="text-xs font-bold text-rose-600 flex items-center gap-1 mt-1" id="ai-hazard-rating">
+            <i class="fa-solid fa-triangle-exclamation"></i> Menunggu Analisis
+          </span>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-gray-100">
+          <span class="text-[10px] text-gray-400 block" id="lbl-ai-squad">Cadangan Skuad</span>
+          <span class="text-xs font-bold text-gray-800 mt-1 block" id="ai-squad-rec">-</span>
+        </div>
+      </div>
+
+      <!-- AI Analysis Prompting & Action Button -->
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
+        <label class="block text-xs font-bold text-mbsj-blue" id="lbl-ai-guide">Arahan Analisis Tersuai (Opsional)</label>
+        <textarea id="ai-user-context" rows="2" placeholder="Masukkan konteks tambahan contoh: 'Bersebelahan dengan tadika', 'Sudah berlaku kemalangan semalam'..." class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue text-xs"></textarea>
+        
+        <button onclick="generateAIAnalysis()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 shadow-md transition duration-200">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span id="btn-trigger-ai">Mula Siasatan Pintar AI</span>
+        </button>
+      </div>
+
+      <!-- Gemini AI Output Area -->
+      <div id="ai-response-container" class="hidden space-y-4">
+        
+        <!-- Loading Indicator -->
+        <div id="ai-loading" class="hidden flex flex-col items-center justify-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-mbsj-blue"></div>
+          <span class="text-xs text-gray-500 mt-3 font-semibold" id="lbl-ai-thinking">Menilai parameter, merujuk pangkalan data MBSJ...</span>
+        </div>
+
+        <!-- Real Generated Data -->
+        <div id="ai-results" class="space-y-4">
+          
+          <!-- Structural Risk Appraisal -->
+          <div class="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-xl border border-emerald-100">
+            <div class="flex items-center space-x-2 text-emerald-800 font-bold text-xs mb-2">
+              <i class="fa-solid fa-microchip-ai text-sm"></i>
+              <span id="lbl-ai-report-head">Hasil Penilaian Risiko Keselamatan</span>
+            </div>
+            <p id="ai-risk-evaluation" class="text-xs text-gray-700 leading-relaxed font-medium">...</p>
+          </div>
+
+          <!-- Official Response Template -->
+          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-2">
+              <span class="text-xs font-bold text-mbsj-blue flex items-center gap-1">
+                <i class="fa-solid fa-envelope-open-text"></i> <span id="lbl-ai-template">Draf Maklum Balas Rakyat</span>
+              </span>
+              <button onclick="copyDraftToClipboard()" class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700">
+                <i class="fa-solid fa-copy mr-1"></i> <span id="btn-copy-draft">Salin Draf</span>
+              </button>
+            </div>
+            <textarea id="ai-draft-response" rows="8" class="w-full p-2.5 bg-gray-50 text-gray-700 rounded-lg text-[11px] leading-relaxed border-0 focus:outline-none custom-scrollbar" readonly></textarea>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-4 bg-gray-100 border-t border-gray-200 flex justify-between items-center">
+      <div class="text-[10px] text-gray-500 flex items-center gap-1">
+        <i class="fa-solid fa-shield-halved"></i> <span>MBSJ AI Smart Guardrail v2.5</span>
+      </div>
+      <button onclick="closeAICopilot()" class="bg-mbsj-blue hover:bg-mbsj-darkBlue text-white font-semibold py-1.5 px-3 rounded-lg text-xs" id="btn-close-ai">Selesai</button>
+    </div>
+
+  </div>
+
+  <!-- ==================== NEW COMPLAINT REGISTRATION MODAL ==================== -->
+  <div id="new-complaint-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-zoomIn">
+      
+      <!-- Modal Header -->
+      <div class="bg-mbsj-blue text-white p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-file-circle-plus text-mbsj-yellow text-lg"></i>
+          <h3 class="font-bold text-sm" id="modal-new-title">Daftar Aduan Baru (Infrastruktur MBSJ)</h3>
+        </div>
+        <button onclick="closeNewComplaintModal()" class="text-white hover:text-mbsj-yellow text-2xl font-bold">&times;</button>
+      </div>
+
+      <!-- Modal Body (Form) -->
+      <form id="new-complaint-form" onsubmit="handleNewComplaintSubmit(event)" class="p-5 space-y-4 text-xs">
+        
+        <!-- Category & Location -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1" id="lbl-form-cat">Kategori Aduan</label>
+            <select id="form-category" class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue" required>
+              <option value="Jalan Raya">Jalan Raya (Lekukan / Pothole)</option>
+              <option value="Parit">Sistem Longkang & Parit</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1" id="lbl-form-zone">Zon / Mukim Subang</label>
+            <select id="form-zone" class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue" required>
+              <option value="SS15 / SS12">SS15 / SS12</option>
+              <option value="USJ Utara">USJ Utara (USJ 1 - 8)</option>
+              <option value="USJ Selatan">USJ Selatan (USJ 9 - 24)</option>
+              <option value="Bandar Sunway">Bandar Sunway</option>
+              <option value="Puchong (MBSJ Area)">Puchong (MBSJ Area)</option>
+              <option value="Putra Heights">Putra Heights</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-1" id="lbl-form-address">Lokasi Spesifik / Alamat Terperinci</label>
+          <input type="text" id="form-address" placeholder="Contoh: Depan Kedai Mamak SS15/4E, bersebelahan Maybank..." class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue" required>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-1" id="lbl-form-desc">Butiran / Hubungan Kerosakan</label>
+          <textarea id="form-description" rows="3" placeholder="Sila perihalkan saiz pothole, kedalaman parit tersumbat, atau air bertakung..." class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue" required></textarea>
+        </div>
+
+        <!-- Complainant Name & Contact -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1" id="lbl-form-name">Nama Pengadu</label>
+            <input type="text" id="form-complainant-name" placeholder="Nama penuh" class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue" required>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1" id="lbl-form-phone">Nombor Telefon</label>
+            <input type="text" id="form-complainant-phone" placeholder="Contoh: 012-3456789" class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue" required>
+          </div>
+        </div>
+
+        <!-- Danger / Priority level Selection -->
+        <div>
+          <label class="block font-bold text-gray-700 mb-1" id="lbl-form-pri">Tahap Bahaya / Priority</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="border border-gray-300 rounded-lg p-2.5 flex items-center space-x-2 cursor-pointer hover:bg-emerald-50 text-emerald-800">
+              <input type="radio" name="form-priority" value="Biasa" checked>
+              <span>Biasa (Low)</span>
+            </label>
+            <label class="border border-gray-300 rounded-lg p-2.5 flex items-center space-x-2 cursor-pointer hover:bg-amber-50 text-amber-800">
+              <input type="radio" name="form-priority" value="Tinggi">
+              <span>Tinggi (High)</span>
+            </label>
+            <label class="border border-gray-300 rounded-lg p-2.5 flex items-center space-x-2 cursor-pointer hover:bg-rose-50 text-rose-800">
+              <input type="radio" name="form-priority" value="Kecemasan">
+              <span>Bahaya (Critical)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+          <button type="button" onclick="closeNewComplaintModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-bold" id="btn-cancel-form">Batal</button>
+          <button type="submit" class="px-5 py-2 bg-mbsj-blue hover:bg-mbsj-darkBlue text-white rounded-lg font-bold" id="btn-submit-form">Hantar Aduan</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== DETAILED VIEW / ACTION MODAL ==================== -->
+  <div id="detail-complaint-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-zoomIn">
+      
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-mbsj-blue to-mbsj-darkBlue text-white p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-file-invoice text-mbsj-yellow text-lg"></i>
+          <h3 class="font-bold text-sm">Butiran Siasatan & Maklumat Tindakan (<span id="det-ref-id">AD-0000</span>)</h3>
+        </div>
+        <button onclick="closeDetailComplaintModal()" class="text-white hover:text-mbsj-yellow text-2xl font-bold">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-4 text-xs overflow-y-auto max-h-[80vh] custom-scrollbar">
+        
+        <!-- Top Status Bar -->
+        <div class="flex flex-wrap justify-between items-center gap-2 bg-slate-50 p-3 rounded-xl border border-gray-100">
+          <div>
+            <span class="text-[10px] text-gray-400 uppercase tracking-wide block" id="lbl-det-status-title">Status Aduan Semasa</span>
+            <span id="det-status-badge" class="px-2.5 py-1 rounded font-bold text-xs inline-block mt-0.5">Baru</span>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="triggerAICopilotFromDetail()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg flex items-center space-x-1.5 transition">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span id="btn-det-ai">Tanya AI Copilot</span>
+            </button>
+            <button onclick="printDispatchTicket()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1.5 px-2.5 rounded-lg flex items-center transition">
+              <i class="fa-solid fa-print"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Double Column Split -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Column 1: Core Citizen Input -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-mbsj-blue border-b border-gray-100 pb-1" id="lbl-det-title-inf">Maklumat Pengadu & Kerosakan</h4>
+            
+            <div>
+              <span class="text-gray-400 block" id="lbl-det-citizen">Pengadu:</span>
+              <span id="det-citizen-info" class="font-semibold text-gray-800">Ahmad Daniel (019-3281002)</span>
+            </div>
+
+            <div>
+              <span class="text-gray-400 block" id="lbl-det-category">Kategori & Lokasi:</span>
+              <span id="det-category-zone" class="font-semibold text-gray-800">Jalan Raya | SS15 / SS12</span>
+            </div>
+
+            <div>
+              <span class="text-gray-400 block" id="lbl-det-address">Alamat Tepat:</span>
+              <span id="det-address" class="font-semibold text-gray-800">Depan Shoplot 15/4E</span>
+            </div>
+
+            <div class="bg-blue-50/50 p-2.5 rounded-lg border border-blue-100/50">
+              <span class="text-mbsj-blue font-bold block mb-1" id="lbl-det-desc">Deskripsi Aduan:</span>
+              <p id="det-description" class="text-gray-700 leading-relaxed">...</p>
+            </div>
+          </div>
+
+          <!-- Column 2: Photo Evidence / Visual mockup -->
+          <div class="space-y-3">
+            <h4 class="font-bold text-mbsj-blue border-b border-gray-100 pb-1" id="lbl-det-evidence">Bukti Visual / Gambar Tapak</h4>
+            
+            <div class="w-full h-40 bg-slate-100 rounded-xl relative overflow-hidden border border-gray-200 flex items-center justify-center">
+              <img id="det-evidence-img" src="" alt="Evidence Tapak" class="w-full h-full object-cover">
+              <!-- Overlay badge -->
+              <div class="absolute bottom-2 right-2 bg-black/70 text-white font-mono text-[9px] px-2 py-0.5 rounded">
+                GEO-LOCATED AT SUBANG JAYA
+              </div>
+            </div>
+
+            <div>
+              <span class="text-gray-400 block" id="lbl-det-date">Tarikh Dilaporkan:</span>
+              <span id="det-reported-date" class="font-semibold text-gray-800">2026-06-25</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Administration Control Actions Section -->
+        <div class="border-t border-gray-100 pt-4 space-y-3">
+          <h4 class="font-bold text-mbsj-blue flex items-center gap-1.5">
+            <i class="fa-solid fa-user-gear"></i> <span id="lbl-det-admin">Pindaan & Tindakan Unit Pentadbiran MBSJ</span>
+          </h4>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            
+            <!-- Update Status -->
+            <div>
+              <label class="block font-bold text-gray-600 mb-1" id="lbl-det-update-status">Ubah Status</label>
+              <select id="det-action-status" class="w-full p-2.5 rounded-lg border border-gray-300 bg-white font-semibold">
+                <option value="Baru">Baru (New)</option>
+                <option value="Dalam Siasatan">Siasatan (Investigation)</option>
+                <option value="Selesai">Selesai (Resolved)</option>
+              </select>
+            </div>
+
+            <!-- Assign Skuad/Contractor -->
+            <div>
+              <label class="block font-bold text-gray-600 mb-1" id="lbl-det-assign">Agihan Skuad</label>
+              <select id="det-action-squad" class="w-full p-2.5 rounded-lg border border-gray-300 bg-white">
+                <option value="MBSJ Skuad Kejuruteraan">MBSJ Skuad Kejuruteraan</option>
+                <option value="Kontraktor Jalan Subang">Kontraktor Jalan Subang</option>
+                <option value="Geng Merah Respon Pantas">Geng Merah Respon Pantas</option>
+                <option value="Alam Flora Saliran">Alam Flora Saliran</option>
+              </select>
+            </div>
+
+            <!-- Priority -->
+            <div>
+              <label class="block font-bold text-gray-600 mb-1" id="lbl-det-priority">Tahap Bahaya</label>
+              <select id="det-action-priority" class="w-full p-2.5 rounded-lg border border-gray-300 bg-white">
+                <option value="Biasa">Biasa (Normal)</option>
+                <option value="Tinggi">Tinggi (High)</option>
+                <option value="Kecemasan">Kecemasan (Emergency)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Internal Admin Log Notes -->
+          <div>
+            <label class="block font-bold text-gray-600 mb-1" id="lbl-det-internal">Nota Tindakan Staf / Kronologi Kerja</label>
+            <textarea id="det-action-notes" rows="2" placeholder="Tuliskan catatan kemajuan kerja tapak untuk simpanan pejabat..." class="w-full p-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-mbsj-blue"></textarea>
+          </div>
+
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+          <button type="button" onclick="closeDetailComplaintModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-bold" id="btn-det-close">Kembali</button>
+          <button type="button" onclick="saveAdminChanges()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold" id="btn-det-save">Kemaskini Rekod</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="bg-mbsj-darkBlue text-white py-8 px-4 md:px-8 mt-auto border-t-4 border-mbsj-yellow">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-center md:text-left">
+      <div>
+        <h4 class="font-extrabold text-sm text-mbsj-yellow mb-1">MAJLIS BANDARAYA SUBANG JAYA (MBSJ)</h4>
+        <p class="text-gray-300">Persiaran Perpaduan, USJ 5, 47610 Subang Jaya, Selangor Darul Ehsan.</p>
+        <p class="text-gray-400 mt-2">&copy; 2026 Majlis Bandaraya Subang Jaya. Direka bentuk secara lestari selaras dengan SJSVC 2035.</p>
+      </div>
+      <div class="space-y-2">
+        <div class="font-bold text-mbsj-yellow" id="lbl-foot-contact">Talian Sokongan / Pusat Kawalan MBSJ</div>
+        <div class="text-sm font-medium"><i class="fa-solid fa-phone mr-1"></i> 03-8024 7700</div>
+        <div class="text-[11px] text-gray-400">Emel: mbsj@mbsj.gov.my | Sistem Maklumbalas Bersepadu SISPAA</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    // Empty API key as mandated by instruction. The runtime parses and applies it.
+    const apiKey = "";
+
+    // ------------------ GLOBAL APP STATE ------------------
+    let currentLanguage = "ms";
+    let activeComplaintIndex = null;
+    let complaintsChartInstance = null;
+
+    // Translation Directory
+    const translations = {
+      ms: {
+        title: "PORTAL PENGURUSAN ADUAN INFRASTRUKTUR",
+        subtitle: "Majlis Bandaraya Subang Jaya — Kawalan Lekukan Jalan & Saluran Parit Tersumbat",
+        officer: "Pegawai Kejuruteraan Zon 4",
+        logout: "Log Keluar",
+        systemOnline: "Sistem Aktif",
+        notifTitle: "Peringatan Tindakan Segera Amaran Cuaca / Hujan Lebat",
+        notifDesc: "Amaran hujan lebat di USJ & Puchong Jaya petang ini. Pasukan Respon Pantas MBSJ (Geng Merah) bersiap sedia untuk aduan lubang jalan berisiko tinggi dan parit tersumbat limpahan air segera.",
+        kpiTotal: "Jumlah Aduan",
+        kpiSubTotal: "daripada bulan lepas",
+        kpiPothole: "Aduan Jalan Raya",
+        kpiDrain: "Parit Tersumbat",
+        kpiResolved: "Kadar Selesai",
+        kpiTime: "Masa Tindak Balas",
+        kpiTimeSub: "MBSJ Sasaran: Bawah 3 Hari",
+        mapTitle: "Peta Interaktif Aduan Subang Jaya",
+        mapSubtitle: "Klik pada zon atau pin aduan untuk tapis senarai tugasan di bawah",
+        resetMap: "Set Semula Peta",
+        legendTitle: "Petunjuk Status",
+        legPothole: "Aduan Lekukan Jalan",
+        legDrain: "Aduan Parit Tersumbat",
+        legHigh: "Kecemasan / Keutamaan Tinggi",
+        chartTitle: "Analisis Aduan Mengikut Mukim",
+        chartSubtitle: "Statistik laporan aktif bulan ini",
+        logNew: "Daftar Aduan Baru (Walk-in / Telefon)",
+        logNewSub: "Gunakan borang ini jika terima aduan terus daripada penduduk",
+        btnOpenForm: "Buka Borang Pendaftaran",
+        workspaceTitle: "Papan Kerja Aduan Berpusat",
+        workspaceSub: "Urus, pantau, dan selesaikan masalah jalan raya dan parit tersumbat",
+        thId: "No. Rujukan",
+        thDetails: "Butiran Kes",
+        thLocation: "Lokasi & Tarikh",
+        thPriority: "Keutamaan",
+        thTeam: "Kontraktor / Skuad",
+        thStatus: "Status",
+        thAction: "Tindakan",
+        noData: "Tiada rekod aduan ditemui",
+        noDataSub: "Cuba tukar penapis atau cari rujukan lain.",
+        aiStatus: "Analisis Keutamaan & Draf Maklumbalas",
+        aiGuide: "Arahan Analisis Tersuai (Opsional)",
+        btnTriggerAI: "Mula Siasatan Pintar AI",
+        aiThinking: "Menilai parameter, merujuk pangkalan data MBSJ...",
+        aiReportHead: "Hasil Penilaian Risiko Keselamatan",
+        aiTemplate: "Draf Maklum Balas Rakyat",
+        btnCopyDraft: "Salin Draf",
+        formCat: "Kategori Aduan",
+        formZone: "Zon / Mukim Subang",
+        formAddress: "Lokasi Spesifik / Alamat Terperinci",
+        formDesc: "Butiran / Hubungan Kerosakan",
+        formName: "Nama Pengadu",
+        formPhone: "Nombor Telefon",
+        formPri: "Tahap Bahaya / Priority",
+        btnCancel: "Batal",
+        btnSubmit: "Hantar Aduan"
+      },
+      en: {
+        title: "INFRASTRUCTURE COMPLAINT MANAGEMENT PORTAL",
+        subtitle: "Subang Jaya City Council — Road Potholes & Clogged Drainage Administration",
+        officer: "Engineering Officer Zone 4",
+        logout: "Log Out",
+        systemOnline: "System Online",
+        notifTitle: "Alert: Immediate Action Required - Heavy Rain Warning",
+        notifDesc: "Heavy rain alert in USJ & Puchong Jaya this afternoon. MBSJ Rapid Response Team (Red Squad) on alert for high-risk road potholes and instant water clog release.",
+        kpiTotal: "Total Complaints",
+        kpiSubTotal: "from previous month",
+        kpiPothole: "Roadway Issues",
+        kpiDrain: "Clogged Drains",
+        kpiResolved: "Resolution Rate",
+        kpiTime: "Avg Response Time",
+        kpiTimeSub: "MBSJ Target: Under 3 Days",
+        mapTitle: "Interactive Subang Jaya Complaint Map",
+        mapSubtitle: "Click a district zone or pin to filter work list below",
+        resetMap: "Reset Map Filter",
+        legendTitle: "Status Legend",
+        legPothole: "Pothole Complaints",
+        legDrain: "Drainage Complaints",
+        legHigh: "Emergency / High Priority",
+        chartTitle: "Complaints Analysis by District",
+        chartSubtitle: "Active statistics for the current month",
+        logNew: "Log New Complaint (Walk-in / Phone)",
+        logNewSub: "Use this form to log complaints received directly from citizens",
+        btnOpenForm: "Open Registration Form",
+        workspaceTitle: "Centralised Complaints Workspace",
+        workspaceSub: "Manage, monitor, and resolve roadway and drainage issues",
+        thId: "Ref No.",
+        thDetails: "Case Details",
+        thLocation: "Location & Date",
+        thPriority: "Priority",
+        thTeam: "Contractor / Squad",
+        thStatus: "Status",
+        thAction: "Action",
+        noData: "No complaints found",
+        noDataSub: "Try changing the filter or search with another keyword.",
+        aiStatus: "Priority Analysis & Response Draft",
+        aiGuide: "Custom AI Context Instructions (Optional)",
+        btnTriggerAI: "Run Intelligent AI Analysis",
+        aiThinking: "Evaluating parameters, calling MBSJ databases...",
+        aiReportHead: "Safety Hazard Analysis Results",
+        aiTemplate: "Draft Citizen Response",
+        btnCopyDraft: "Copy Draft",
+        formCat: "Complaint Category",
+        formZone: "Subang Zone / District",
+        formAddress: "Specific Location / Address Details",
+        formDesc: "Damage Description / Context",
+        formName: "Complainant Name",
+        formPhone: "Phone Number",
+        formPri: "Danger Level / Priority",
+        btnCancel: "Cancel",
+        btnSubmit: "Submit Complaint"
+      }
+    };
+
+    // Rich Sample Mock Data
+    let complaintsData = [
+      {
+        id: "AD-8041",
+        category: "Jalan Raya",
+        zone: "SS15 / SS12",
+        address: "Jalan SS15/4, Depan Maybank SS15",
+        description: "Lekukan jalan yang amat besar dan berbahaya bagi penunggang motosikal. Kedalaman hampir 12cm. Semalam ada tayar kereta pecah di sini.",
+        complainant: "Ahmad Daniel Bin Rosli",
+        phone: "019-3281002",
+        priority: "Kecemasan",
+        squad: "Geng Merah Respon Pantas",
+        status: "Baru",
+        date: "2026-06-25",
+        img: "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=600&auto=format&fit=crop",
+        internalNotes: "Telah diterima daripada pengadu awam melalui aplikasi MyMBSJ."
+      },
+      {
+        id: "AD-9102",
+        category: "Parit",
+        zone: "USJ Utara",
+        address: "USJ 4/2A, berhampiran Padang Awam USJ 4",
+        description: "Saluran longkang utama tersumbat akibat sisa binaan dari ubahsuai rumah. Air longkang bertakung dan mengeluarkan bau busuk serta pembiakan nyamuk.",
+        complainant: "Saraswathy A/P Krishnan",
+        phone: "012-3049103",
+        priority: "Biasa",
+        squad: "Alam Flora Saliran",
+        status: "Dalam Siasatan",
+        date: "2026-06-22",
+        img: "https://images.unsplash.com/photo-1542060748-10c28b629f6f?q=80&w=600&auto=format&fit=crop",
+        internalNotes: "MBSJ telah hantar notis amaran awal kepada kontraktor pembersihan di kawasan USJ 4."
+      },
+      {
+        id: "AD-7049",
+        category: "Parit",
+        zone: "Bandar Sunway",
+        address: "Jalan PJS 11/15, Kawasan Perindustrian Sunway",
+        description: "Apabila hujan lebat lebih 20 minit, parit tersumbat menyebabkan air melimpah ke atas jalan raya utama. Menyebabkan kesesakan teruk.",
+        complainant: "Lee Chong Wai",
+        phone: "016-8820492",
+        priority: "Tinggi",
+        squad: "MBSJ Skuad Kejuruteraan",
+        status: "Baru",
+        date: "2026-06-27",
+        img: "https://images.unsplash.com/photo-1508873696983-2df519f0397e?q=80&w=600&auto=format&fit=crop",
+        internalNotes: "Akan dijadualkan pemeriksaan banjir kilat."
+      },
+      {
+        id: "AD-5511",
+        category: "Jalan Raya",
+        zone: "Puchong (MBSJ Area)",
+        address: "Jalan Kenari 5, Bandar Puchong Jaya",
+        description: "Kerosakan tar pecah (lubang pothole) betul-betul di persimpangan lampu isyarat. Kereta terpaksa mengelak secara drastik, sangat berbahaya.",
+        complainant: "Muhammad Harris",
+        phone: "011-23398492",
+        priority: "Kecemasan",
+        squad: "Kontraktor Jalan Subang",
+        status: "Dalam Siasatan",
+        date: "2026-06-24",
+        img: "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=600&auto=format&fit=crop",
+        internalNotes: "Kontraktor premix tempatan telah dimaklumkan untuk penampalan sementara."
+      },
+      {
+        id: "AD-3022",
+        category: "Jalan Raya",
+        zone: "Putra Heights",
+        address: "Jalan Putra Indah 9/1B",
+        description: "Pothole dalam di simpang masuk Putra Heights LRT. Kereta melanggar dan menyebabkan kerosakan rim.",
+        complainant: "Tan Sri Jeffrey",
+        phone: "012-3330044",
+        priority: "Tinggi",
+        squad: "Kontraktor Jalan Subang",
+        status: "Selesai",
+        date: "2026-06-18",
+        img: "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=600&auto=format&fit=crop",
+        internalNotes: "Selesai tampalan penuh semalam. Gambar ditutup dengan gembira."
+      }
+    ];
+
+    let currentDistrictFilter = null;
+
+    // ------------------ ON LOAD INITIALIZATION ------------------
+    window.onload = function() {
+      renderComplaintsTable();
+      updateStatistics();
+      renderMukimAnalyticsChart();
+    };
+
+    // ------------------ LANGUAGE TOGGLE ------------------
+    function toggleLanguage(lang) {
+      currentLanguage = lang;
+      
+      // Update UI Language buttons styling
+      document.getElementById('lang-ms').className = lang === 'ms' ? 'text-mbsj-yellow font-semibold underline' : 'text-gray-300 hover:text-white';
+      document.getElementById('lang-en').className = lang === 'en' ? 'text-mbsj-yellow font-semibold underline' : 'text-gray-300 hover:text-white';
+
+      // Dom Elements translations
+      const trans = translations[lang];
+      document.getElementById('header-subtitle').innerText = trans.subtitle;
+      document.getElementById('txt-welcome-role').innerText = trans.officer;
+      document.getElementById('btn-logout').innerText = trans.logout;
+      document.getElementById('txt-sys-online').innerText = trans.systemOnline;
+      document.getElementById('notif-title').innerText = trans.notifTitle;
+      document.getElementById('notif-desc').innerText = trans.notifDesc;
+      
+      // KPI titles
+      document.getElementById('lbl-kpi-total').innerText = trans.kpiTotal;
+      document.getElementById('lbl-kpi-sub-total').innerText = trans.kpiSubTotal;
+      document.getElementById('lbl-kpi-pothole').innerText = trans.kpiPothole;
+      document.getElementById('lbl-kpi-drain').innerText = trans.kpiDrain;
+      document.getElementById('lbl-kpi-resolved').innerText = trans.kpiResolved;
+      document.getElementById('lbl-kpi-time').innerText = trans.kpiTime;
+      document.getElementById('lbl-kpi-time-sub').innerText = trans.kpiTimeSub;
+
+      // Map titles & legend
+      document.getElementById('lbl-map-title').innerText = trans.mapTitle;
+      document.getElementById('lbl-map-subtitle').innerText = trans.mapSubtitle;
+      document.getElementById('btn-reset-map').innerText = trans.resetMap;
+      document.getElementById('lbl-legend-title').innerText = trans.legendTitle;
+      document.getElementById('lbl-leg-pothole').innerText = trans.legPothole;
+      document.getElementById('lbl-leg-drain').innerText = trans.legDrain;
+      document.getElementById('lbl-leg-high').innerText = trans.legHigh;
+
+      // Chart & Register section
+      document.getElementById('lbl-chart-title').innerText = trans.chartTitle;
+      document.getElementById('lbl-chart-subtitle').innerText = trans.chartSubtitle;
+      document.getElementById('lbl-log-new').innerText = trans.logNew;
+      document.getElementById('lbl-log-new-sub').innerText = trans.logNewSub;
+      document.getElementById('btn-open-form-aduan').innerText = trans.btnOpenForm;
+
+      // Table Workspace headings
+      document.getElementById('lbl-workspace-title').innerText = trans.workspaceTitle;
+      document.getElementById('lbl-workspace-sub').innerText = trans.workspaceSub;
+      document.getElementById('th-id').innerText = trans.thId;
+      document.getElementById('th-details').innerText = trans.thDetails;
+      document.getElementById('th-location').innerText = trans.thLocation;
+      document.getElementById('th-priority').innerText = trans.thPriority;
+      document.getElementById('th-team').innerText = trans.thTeam;
+      document.getElementById('th-status').innerText = trans.thStatus;
+      document.getElementById('th-action').innerText = trans.thAction;
+      document.getElementById('lbl-no-data').innerText = trans.noData;
+      document.getElementById('lbl-no-data-sub').innerText = trans.noDataSub;
+
+      // Dropdown Option translations
+      document.getElementById('opt-all-type').innerText = trans.allType || "Semua Kategori";
+      document.getElementById('opt-pothole').innerText = lang === 'en' ? "Roadway (Potholes)" : "Jalan Raya (Lekukan)";
+      document.getElementById('opt-drain').innerText = lang === 'en' ? "Drainage / Pipes" : "Parit / Saliran";
+      document.getElementById('opt-all-status').innerText = lang === 'en' ? "All Statuses" : "Semua Status";
+      document.getElementById('opt-baru').innerText = lang === 'en' ? "New" : "Baru";
+      document.getElementById('opt-investigation').innerText = lang === 'en' ? "Investigation" : "Dalam Siasatan";
+      document.getElementById('opt-resolved').innerText = lang === 'en' ? "Resolved" : "Selesai";
+
+      // Copilot drawer titles
+      document.getElementById('lbl-ai-status').innerText = trans.aiStatus;
+      document.getElementById('lbl-ai-guide').innerText = trans.aiGuide;
+      document.getElementById('btn-trigger-ai').innerText = trans.btnTriggerAI;
+      document.getElementById('lbl-ai-thinking').innerText = trans.aiThinking;
+      document.getElementById('lbl-ai-report-head').innerText = trans.aiReportHead;
+      document.getElementById('lbl-ai-template').innerText = trans.aiTemplate;
+      document.getElementById('btn-copy-draft').innerText = trans.btnCopyDraft;
+
+      // Modal titles
+      document.getElementById('modal-new-title').innerText = lang === 'en' ? "Register New Complaint (MBSJ)" : "Daftar Aduan Baru (Infrastruktur MBSJ)";
+      document.getElementById('lbl-form-cat').innerText = trans.formCat;
+      document.getElementById('lbl-form-zone').innerText = trans.formZone;
+      document.getElementById('lbl-form-address').innerText = trans.formAddress;
+      document.getElementById('lbl-form-desc').innerText = trans.formDesc;
+      document.getElementById('lbl-form-name').innerText = trans.formName;
+      document.getElementById('lbl-form-phone').innerText = trans.formPhone;
+      document.getElementById('lbl-form-pri').innerText = trans.formPri;
+      document.getElementById('btn-cancel-form').innerText = trans.btnCancel;
+      document.getElementById('btn-submit-form').innerText = trans.btnSubmit;
+
+      // Detail Modal Titles
+      document.getElementById('lbl-det-status-title').innerText = lang === 'en' ? "Current Complaint Status" : "Status Aduan Semasa";
+      document.getElementById('btn-det-ai').innerText = lang === 'en' ? "Ask AI Copilot" : "Tanya AI Copilot";
+      document.getElementById('lbl-det-title-inf').innerText = lang === 'en' ? "Complainant & Defect Details" : "Maklumat Pengadu & Kerosakan";
+      document.getElementById('lbl-det-citizen').innerText = lang === 'en' ? "Complainant:" : "Pengadu:";
+      document.getElementById('lbl-det-category').innerText = lang === 'en' ? "Category & Location:" : "Kategori & Lokasi:";
+      document.getElementById('lbl-det-address').innerText = lang === 'en' ? "Specific Address:" : "Alamat Tepat:";
+      document.getElementById('lbl-det-desc').innerText = lang === 'en' ? "Defect Description:" : "Deskripsi Aduan:";
+      document.getElementById('lbl-det-evidence').innerText = lang === 'en' ? "Visual Evidence / Site Image" : "Bukti Visual / Gambar Tapak";
+      document.getElementById('lbl-det-date').innerText = lang === 'en' ? "Date Reported:" : "Tarikh Dilaporkan:";
+      document.getElementById('lbl-det-admin').innerText = lang === 'en' ? "MBSJ Administrative Action Console" : "Pindaan & Tindakan Unit Pentadbiran MBSJ";
+      document.getElementById('lbl-det-update-status').innerText = lang === 'en' ? "Amend Status" : "Ubah Status";
+      document.getElementById('lbl-det-assign').innerText = lang === 'en' ? "Assign Squad / Crew" : "Agihan Skuad";
+      document.getElementById('lbl-det-priority').innerText = lang === 'en' ? "Hazard Severity" : "Tahap Bahaya";
+      document.getElementById('lbl-det-internal').innerText = lang === 'en' ? "Internal Action Notes / Progress Chronology" : "Nota Tindakan Staf / Kronologi Kerja";
+      document.getElementById('btn-det-close').innerText = lang === 'en' ? "Back" : "Kembali";
+      document.getElementById('btn-det-save').innerText = lang === 'en' ? "Update Record" : "Kemaskini Rekod";
+
+      // Refresh dynamic content
+      renderComplaintsTable();
+      updateStatistics();
+    }
+
+    // ------------------ STATISTICS CALCULATION ------------------
+    function updateStatistics() {
+      const total = complaintsData.length;
+      const roadPotholes = complaintsData.filter(c => c.category === "Jalan Raya").length;
+      const drains = complaintsData.filter(c => c.category === "Parit").length;
+      const resolved = complaintsData.filter(c => c.status === "Selesai").length;
+      const activeUnresolvedPotholes = complaintsData.filter(c => c.category === "Jalan Raya" && c.status !== "Selesai").length;
+      const activeUnresolvedDrains = complaintsData.filter(c => c.category === "Parit" && c.status !== "Selesai").length;
+
+      const rate = total > 0 ? ((resolved / total) * 100).toFixed(1) : 0;
+
+      document.getElementById("stat-total").innerText = total;
+      document.getElementById("stat-pothole").innerText = roadPotholes;
+      document.getElementById("stat-drain").innerText = drains;
+      document.getElementById("stat-resolved-rate").innerText = rate + "%";
+      
+      if (currentLanguage === "ms") {
+        document.getElementById("stat-pothole-open").innerText = `${activeUnresolvedPotholes} Baru & Proses`;
+        document.getElementById("stat-drain-open").innerText = `${activeUnresolvedDrains} Baru & Proses`;
+        document.getElementById("stat-resolved-num").innerText = `${resolved} kes berjaya ditutup`;
+      } else {
+        document.getElementById("stat-pothole-open").innerText = `${activeUnresolvedPotholes} New & Active`;
+        document.getElementById("stat-drain-open").innerText = `${activeUnresolvedDrains} New & Active`;
+        document.getElementById("stat-resolved-num").innerText = `${resolved} cases completed`;
+      }
+    }
+
+    // ------------------ CHART MANAGEMENT ------------------
+    function renderMukimAnalyticsChart() {
+      const ctx = document.getElementById('complaintsChart').getContext('2d');
+      
+      // Calculate data distribution per Subang zone
+      const zones = ["SS15 / SS12", "USJ Utara", "USJ Selatan", "Bandar Sunway", "Puchong (MBSJ Area)", "Putra Heights"];
+      const counts = zones.map(z => complaintsData.filter(c => c.zone === z).length);
+
+      if (complaintsChartInstance) {
+        complaintsChartInstance.destroy();
+      }
+
+      complaintsChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: zones,
+          datasets: [{
+            data: counts,
+            backgroundColor: [
+              '#002D62', // Deep Blue
+              '#FFCC00', // Gold
+              '#38BDF8', // Light blue
+              '#F59E0B', // Amber
+              '#10B981', // Emerald
+              '#F43F5E'  // Rose
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12,
+                font: {
+                  size: 9,
+                  family: 'Poppins'
+                }
+              }
+            }
+          },
+          cutout: '60%'
+        }
+      });
+    }
+
+    // ------------------ FILTER & SECTORS ------------------
+    function filterBySubangDistrict(districtName) {
+      currentDistrictFilter = districtName;
+      
+      // Highlight map zones visually
+      const districts = ["SS15 / SS12", "USJ Utara", "USJ Selatan", "Bandar Sunway", "Puchong (MBSJ Area)", "Putra Heights"];
+      
+      // Show badge
+      const badge = document.getElementById("map-selection-badge");
+      document.getElementById("map-selected-zone-name").innerText = districtName;
+      badge.classList.remove("hidden");
+
+      renderComplaintsTable();
+    }
+
+    function resetMapFilter() {
+      currentDistrictFilter = null;
+      document.getElementById("map-selection-badge").classList.add("hidden");
+      renderComplaintsTable();
+    }
+
+    function filterComplaints() {
+      renderComplaintsTable();
+    }
+
+    // ------------------ TABLE RENDER ------------------
+    function renderComplaintsTable() {
+      const tbody = document.getElementById('complaints-table-body');
+      const emptyState = document.getElementById('table-empty-state');
+      tbody.innerHTML = '';
+
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      const typeFilter = document.getElementById('filter-type').value;
+      const statusFilter = document.getElementById('filter-status').value;
+
+      let filteredList = complaintsData.filter(complaint => {
+        // Search term
+        const matchesSearch = complaint.id.toLowerCase().includes(searchQuery) ||
+                              complaint.address.toLowerCase().includes(searchQuery) ||
+                              complaint.complainant.toLowerCase().includes(searchQuery) ||
+                              complaint.description.toLowerCase().includes(searchQuery);
+        
+        // Category Filter
+        let matchesType = true;
+        if (typeFilter !== 'all') {
+          matchesType = complaint.category === typeFilter;
+        }
+
+        // Status Filter
+        let matchesStatus = true;
+        if (statusFilter !== 'all') {
+          matchesStatus = complaint.status === statusFilter;
+        }
+
+        // Map District Filter
+        let matchesDistrict = true;
+        if (currentDistrictFilter) {
+          matchesDistrict = complaint.zone === currentDistrictFilter;
+        }
+
+        return matchesSearch && matchesType && matchesStatus && matchesDistrict;
+      });
+
+      if (filteredList.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      filteredList.forEach((comp, idx) => {
+        // Find real index in parent list
+        const originalIndex = complaintsData.findIndex(item => item.id === comp.id);
+        
+        let priorityBadge = '';
+        if (comp.priority === "Kecemasan") {
+          priorityBadge = '<span class="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-full flex items-center justify-center gap-1 w-max"><span class="h-1.5 w-1.5 rounded-full bg-rose-600 animate-ping"></span>Kecemasan</span>';
+        } else if (comp.priority === "Tinggi") {
+          priorityBadge = '<span class="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full w-max">Tinggi</span>';
+        } else {
+          priorityBadge = '<span class="bg-slate-100 text-slate-800 font-medium px-2 py-0.5 rounded-full w-max">Biasa</span>';
+        }
+
+        let statusBadge = '';
+        if (comp.status === "Baru") {
+          statusBadge = '<span class="bg-blue-100 text-blue-800 font-extrabold px-2.5 py-1 rounded-md border border-blue-200">BARU</span>';
+        } else if (comp.status === "Dalam Siasatan") {
+          statusBadge = '<span class="bg-amber-100 text-amber-800 font-extrabold px-2.5 py-1 rounded-md border border-amber-200">SIASATAN</span>';
+        } else {
+          statusBadge = '<span class="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-md border border-emerald-200">SELESAI</span>';
+        }
+
+        // Category icon representation
+        const catIcon = comp.category === "Jalan Raya" 
+          ? '<i class="fa-solid fa-road text-amber-600 text-sm"></i>' 
+          : '<i class="fa-solid fa-faucet-drip text-cyan-600 text-sm"></i>';
+
+        const row = document.createElement('tr');
+        row.className = "hover:bg-slate-50 transition duration-150";
+        row.innerHTML = `
+          <td class="py-4 px-4 font-mono font-bold text-mbsj-blue">${comp.id}</td>
+          <td class="py-4 px-4">
+            <div class="flex items-center space-x-3.5">
+              <div class="shrink-0 h-10 w-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                <img src="${comp.img}" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=150'" class="w-full h-full object-cover">
+              </div>
+              <div class="max-w-xs md:max-w-md">
+                <div class="font-bold text-gray-900 flex items-center gap-1.5">
+                  ${catIcon} <span>${comp.category === 'Jalan Raya' ? (currentLanguage === 'en' ? 'Pothole Defect' : 'Lekukan Jalan') : (currentLanguage === 'en' ? 'Clogged Drainage' : 'Saluran Parit')}</span>
+                </div>
+                <p class="text-[11px] text-gray-500 line-clamp-2 mt-0.5">${comp.description}</p>
+              </div>
+            </div>
+          </td>
+          <td class="py-4 px-4">
+            <div class="font-semibold text-gray-800 flex items-center gap-1"><i class="fa-solid fa-location-dot text-gray-400"></i> ${comp.zone}</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">${comp.address}</div>
+            <div class="text-[10px] text-gray-400 mt-1"><i class="fa-solid fa-calendar"></i> ${comp.date}</div>
+          </td>
+          <td class="py-4 px-4">${priorityBadge}</td>
+          <td class="py-4 px-4 font-semibold text-slate-700">${comp.squad}</td>
+          <td class="py-4 px-4">${statusBadge}</td>
+          <td class="py-4 px-4 text-center">
+            <div class="flex justify-center items-center space-x-1.5">
+              <button onclick="viewComplaintById('${comp.id}')" class="bg-mbsj-neutralGray hover:bg-mbsj-yellow hover:text-mbsj-blue transition p-2 rounded-lg text-mbsj-blue text-xs flex items-center gap-1 font-semibold" title="Tolak Siasatan / Sunting">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> <span class="hidden sm:inline">Urus</span>
+              </button>
+              <button onclick="openAICopilot('${comp.id}')" class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 transition p-2 rounded-lg text-white" title="Pemeriksaan AI Gemini">
+                <i class="fa-solid fa-robot"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // ------------------ DIRECT REKOD SELECTION / DIAL UP ------------------
+    function viewComplaintById(id) {
+      const idx = complaintsData.findIndex(c => c.id === id);
+      if (idx !== -1) {
+        activeComplaintIndex = idx;
+        const comp = complaintsData[idx];
+
+        document.getElementById('det-ref-id').innerText = comp.id;
+        document.getElementById('det-citizen-info').innerText = `${comp.complainant} (${comp.phone})`;
+        document.getElementById('det-category-zone').innerText = `${comp.category} | ${comp.zone}`;
+        document.getElementById('det-address').innerText = comp.address;
+        document.getElementById('det-description').innerText = comp.description;
+        document.getElementById('det-reported-date').innerText = comp.date;
+        document.getElementById('det-action-status').value = comp.status;
+        document.getElementById('det-action-squad').value = comp.squad;
+        document.getElementById('det-action-priority').value = comp.priority;
+        document.getElementById('det-action-notes').value = comp.internalNotes || '';
+        
+        // Setup visual evidence preview
+        document.getElementById('det-evidence-img').src = comp.img;
+
+        // Color coordination for detail status badge
+        const badge = document.getElementById('det-status-badge');
+        badge.innerText = comp.status.toUpperCase();
+        if (comp.status === "Baru") {
+          badge.className = "px-2.5 py-1 rounded font-bold text-xs inline-block mt-0.5 bg-blue-100 text-blue-800 border border-blue-200";
+        } else if (comp.status === "Dalam Siasatan") {
+          badge.className = "px-2.5 py-1 rounded font-bold text-xs inline-block mt-0.5 bg-amber-100 text-amber-800 border border-amber-200";
+        } else {
+          badge.className = "px-2.5 py-1 rounded font-bold text-xs inline-block mt-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200";
+        }
+
+        document.getElementById('detail-complaint-modal').classList.remove('hidden');
+      }
+    }
+
+    function closeDetailComplaintModal() {
+      document.getElementById('detail-complaint-modal').classList.add('hidden');
+    }
+
+    function saveAdminChanges() {
+      if (activeComplaintIndex !== null) {
+        complaintsData[activeComplaintIndex].status = document.getElementById('det-action-status').value;
+        complaintsData[activeComplaintIndex].squad = document.getElementById('det-action-squad').value;
+        complaintsData[activeComplaintIndex].priority = document.getElementById('det-action-priority').value;
+        complaintsData[activeComplaintIndex].internalNotes = document.getElementById('det-action-notes').value;
+
+        closeDetailComplaintModal();
+        renderComplaintsTable();
+        updateStatistics();
+        renderMukimAnalyticsChart();
+        showNotification("Kemaskini berjaya disimpan untuk rekod " + complaintsData[activeComplaintIndex].id);
+      }
+    }
+
+    // ------------------ NEW COMPLAINT REGISTRATION ------------------
+    function openNewComplaintModal() {
+      document.getElementById('new-complaint-modal').classList.remove('hidden');
+    }
+
+    function closeNewComplaintModal() {
+      document.getElementById('new-complaint-modal').classList.add('hidden');
+      document.getElementById('new-complaint-form').reset();
+    }
+
+    function handleNewComplaintSubmit(event) {
+      event.preventDefault();
+
+      const category = document.getElementById('form-category').value;
+      const zone = document.getElementById('form-zone').value;
+      const address = document.getElementById('form-address').value;
+      const description = document.getElementById('form-description').value;
+      const complainantName = document.getElementById('form-complainant-name').value;
+      const complainantPhone = document.getElementById('form-complainant-phone').value;
+      const priority = document.querySelector('input[name="form-priority"]:checked').value;
+
+      // Assign default squad based on category
+      let squad = "MBSJ Skuad Kejuruteraan";
+      if (category === "Parit") {
+        squad = "Alam Flora Saliran";
+      }
+
+      // Predefined images for visual fidelity based on category
+      const randomId = "AD-" + Math.floor(1000 + Math.random() * 9000);
+      const imgUrl = category === "Jalan Raya" 
+        ? "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=600"
+        : "https://images.unsplash.com/photo-1542060748-10c28b629f6f?q=80&w=600";
+
+      const today = new Date().toISOString().split('T')[0];
+
+      const newRecord = {
+        id: randomId,
+        category,
+        zone,
+        address,
+        description,
+        complainant: complainantName,
+        phone: complainantPhone,
+        priority,
+        squad,
+        status: "Baru",
+        date: today,
+        img: imgUrl,
+        internalNotes: "Daftar aduan manual oleh pegawai bertugas."
+      };
+
+      complaintsData.unshift(newRecord);
+      closeNewComplaintModal();
+      renderComplaintsTable();
+      updateStatistics();
+      renderMukimAnalyticsChart();
+      showNotification("Aduan Baru " + randomId + " Berjaya Didaftarkan");
+    }
+
+    // ------------------ AI COPILOT SYSTEM (GEMINI INTEGRATION) ------------------
+    function openAICopilot(id) {
+      let targetId = id;
+      if (!targetId && activeComplaintIndex !== null) {
+        targetId = complaintsData[activeComplaintIndex].id;
+      }
+
+      const comp = complaintsData.find(c => c.id === targetId);
+      if (!comp) return;
+
+      activeComplaintIndex = complaintsData.findIndex(c => c.id === targetId);
+
+      // Populate AI drawer preview
+      document.getElementById('ai-active-id').innerText = comp.id;
+      document.getElementById('ai-active-type').innerText = comp.category;
+      document.getElementById('ai-active-title').innerText = comp.address;
+      document.getElementById('ai-active-desc').innerText = `"${comp.description}"`;
+      
+      // Default placeholder state
+      document.getElementById('ai-hazard-rating').className = "text-xs font-bold text-gray-500 flex items-center gap-1 mt-1";
+      document.getElementById('ai-hazard-rating').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Menunggu Analisis`;
+      document.getElementById('ai-squad-rec').innerText = "-";
+      document.getElementById('ai-response-container').classList.add('hidden');
+      document.getElementById('ai-user-context').value = '';
+
+      document.getElementById('ai-copilot-drawer').classList.remove('translate-x-full');
+    }
+
+    function triggerAICopilotFromDetail() {
+      if (activeComplaintIndex !== null) {
+        closeDetailComplaintModal();
+        openAICopilot(complaintsData[activeComplaintIndex].id);
+      }
+    }
+
+    function closeAICopilot() {
+      document.getElementById('ai-copilot-drawer').classList.add('translate-x-full');
+    }
+
+    // Exponential Backoff API Call Implementation
+    async function makeGeminiApiCall(payload, retries = 5, delay = 1000) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      
+      for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+          
+          if (response.ok) {
+            return await response.json();
+          }
+        } catch (error) {
+          // Failure handled by retry loop
+        }
+        
+        // Wait before next retry using exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt)));
+      }
+      throw new Error("Gagal menyambung ke Enjin AI setelah beberapa percubaan.");
+    }
+
+    async function generateAIAnalysis() {
+      const comp = complaintsData[activeComplaintIndex];
+      const customContext = document.getElementById('ai-user-context').value;
+
+      document.getElementById('ai-response-container').classList.remove('hidden');
+      document.getElementById('ai-loading').classList.remove('hidden');
+      document.getElementById('ai-results').classList.add('hidden');
+
+      const systemPrompt = `You are the chief engineering analyzer for MBSJ (Majlis Bandaraya Subang Jaya) Selangor, Malaysia. Your job is to analyze citizens' infrastructure complaints (potholes and clogged drains) and output a clean JSON structured response outlining a safety risk appraisal and a professional citizen-oriented email response in Malay. Keep everything professional, structured, and realistic. Use specific local details of Subang area like USJ, SS15 etc. if relevant.`;
+      
+      const userQuery = `
+        Analisis kes berikut:
+        No Rujukan: ${comp.id}
+        Kategori: ${comp.category}
+        Zon Subang: ${comp.zone}
+        Lokasi: ${comp.address}
+        Aduan Penduduk: "${comp.description}"
+        Konteks Tambahan Pegawai: "${customContext || 'Tiada'}"
+
+        Sila berikan jawapan dalam format JSON dengan struktur berikut:
+        {
+          "hazardRating": "Kecemasan / Tinggi / Sederhana / Rendah",
+          "recommendedSquad": "Geng Merah Respon Pantas / MBSJ Skuad Kejuruteraan / Alam Flora Saliran / Kontraktor Jalan Subang",
+          "safetyAssessment": "Penjelasan ringkas (maksimum 3 baris) dalam Bahasa Melayu mengenai mengapa kes ini berbahaya dan tindakan kejuruteraan yang perlu diambil segera.",
+          "officialDraft": "Draf emel maklumbalas rasmi yang sangat sopan dan profesional dalam Bahasa Melayu dari MBSJ kepada pengadu ${comp.complainant}. Nyatakan tindakan akan diambil oleh skuad cadangan tersebut."
+        }
+      `;
+
+      const payload = {
+        contents: [{
+          parts: [{ text: userQuery }]
+        }],
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              hazardRating: { type: "STRING" },
+              recommendedSquad: { type: "STRING" },
+              safetyAssessment: { type: "STRING" },
+              officialDraft: { type: "STRING" }
+            },
+            required: ["hazardRating", "recommendedSquad", "safetyAssessment", "officialDraft"]
+          }
+        }
+      };
+
+      try {
+        const result = await makeGeminiApiCall(payload);
+        const parsedData = JSON.parse(result.candidates[0].content.parts[0].text);
+
+        // Update UI metrics
+        const hazardBadge = document.getElementById('ai-hazard-rating');
+        hazardBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${parsedData.hazardRating}`;
+        
+        if (parsedData.hazardRating.includes("Kecemasan") || parsedData.hazardRating.includes("Tinggi")) {
+          hazardBadge.className = "text-xs font-bold text-rose-600 flex items-center gap-1 mt-1";
+        } else {
+          hazardBadge.className = "text-xs font-bold text-amber-600 flex items-center gap-1 mt-1";
+        }
+
+        document.getElementById('ai-squad-rec').innerText = parsedData.recommendedSquad;
+        document.getElementById('ai-risk-evaluation').innerText = parsedData.safetyAssessment;
+        document.getElementById('ai-draft-response').value = parsedData.officialDraft;
+
+        // Display results
+        document.getElementById('ai-loading').classList.add('hidden');
+        document.getElementById('ai-results').classList.remove('hidden');
+
+      } catch (err) {
+        document.getElementById('ai-loading').classList.add('hidden');
+        showNotification("Enjin AI sibuk atau kehabisan kuota. Memaparkan penilaian kecemasan templat.", true);
+        
+        // Populate offline fallback analysis safely
+        const hazardBadge = document.getElementById('ai-hazard-rating');
+        hazardBadge.className = "text-xs font-bold text-amber-600 flex items-center gap-1 mt-1";
+        hazardBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Tinggi (Fallback)`;
+        document.getElementById('ai-squad-rec').innerText = "MBSJ Skuad Kejuruteraan (Fallback)";
+        document.getElementById('ai-risk-evaluation').innerText = "Siasatan tapak manual diperlukan segera dalam tempoh 24 jam. Kerosakan ini berisiko membahayakan pengguna jalan raya.";
+        document.getElementById('ai-draft-response').value = `Salam Hormat ${comp.complainant},\n\nTerima kasih atas aduan anda (Rujukan: ${comp.id}) mengenai ${comp.category} di ${comp.zone}.\n\nAduan ini telah dimasukkan ke dalam sistem kerja pentadbiran kami dan tindakan pantas pembaikan akan dijalankan oleh skuad tindakan khas MBSJ.\n\nSekian, terima kasih.\n\nYang menjalankan amanah,\nUnit Kejuruteraan MBSJ`;
+        
+        document.getElementById('ai-results').classList.remove('hidden');
+      }
+    }
+
+    function copyDraftToClipboard() {
+      const copyText = document.getElementById("ai-draft-response");
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); // For mobile devices
+      
+      // Traditional execCommand bypasses iframe navigator limits
+      document.execCommand('copy');
+      
+      showNotification("Draf maklum balas disalin ke papan klip!");
+    }
+
+    // ------------------ UTILITIES & NOTIFICATIONS ------------------
+    function showNotification(message, isError = false) {
+      const notification = document.createElement('div');
+      notification.className = `fixed bottom-5 right-5 z-50 text-white text-xs font-bold py-3 px-5 rounded-xl shadow-lg flex items-center space-x-2 transition duration-300 transform translate-y-2 animate-bounce ${isError ? 'bg-rose-600' : 'bg-emerald-600'}`;
+      notification.innerHTML = `
+        <i class="fa-solid ${isError ? 'fa-circle-xmark' : 'fa-circle-check'}"></i>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.remove();
+      }, 3500);
+    }
+
+    function printDispatchTicket() {
+      const comp = complaintsData[activeComplaintIndex];
+      const win = window.open("", "_blank");
+      win.document.write(`
+        <html>
+        <head>
+          <title>MBSJ Tiket Tugasan - ${comp.id}</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; }
+            .header { border-bottom: 2px solid #002D62; padding-bottom: 10px; margin-bottom: 20px; }
+            .title { font-size: 20px; font-weight: bold; color: #002D62; }
+            .details { margin-bottom: 20px; line-height: 1.6; }
+            .section-title { font-weight: bold; margin-top: 15px; color: #333; text-transform: uppercase; }
+          </style>
+        </head>
+        <body onload="window.print()">
+          <div class="header">
+            <div class="title">MAJLIS BANDARAYA SUBANG JAYA</div>
+            <div>TIKET AGIHAN TUGASAN INFRASTRUKTUR</div>
+          </div>
+          <div class="details">
+            <div class="section-title">BUTIRAN REKOD</div>
+            <strong>No Rujukan:</strong> ${comp.id}<br>
+            <strong>Kategori:</strong> ${comp.category}<br>
+            <strong>Tarikh Dilaporkan:</strong> ${comp.date}<br>
+            <strong>Mukim/Zon:</strong> ${comp.zone}<br>
+            <strong>Alamat:</strong> ${comp.address}<br>
+            
+            <div class="section-title">BUTIRAN BAHAYA & SKUAD</div>
+            <strong>Tahap Bahaya:</strong> ${comp.priority}<br>
+            <strong>Skuad Bertanggungjawab:</strong> ${comp.squad}<br>
+            
+            <div class="section-title">DESKRIPSI ADUAN</div>
+            <p>${comp.description}</p>
+            
+            <div class="section-title">KRONOLOGI/CATATAN PEJABAT</div>
+            <p>${comp.internalNotes || 'Tiada nota tambahan.'}</p>
+          </div>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
+    function logOutAdmin() {
+      showNotification("Sesi pentadbiran ditutup. Mengembalikan ke skrin utama.", false);
+    }
+  </script>
+</body>
+</html>
