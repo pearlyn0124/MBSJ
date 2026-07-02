@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBSJ Smart Monitoring | Dasbor Manajemen Pengaduan Publik & IoT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+        }
+        .mbsj-navy { background-color: #0B2545; }
+        .mbsj-navy-dark { background-color: #051427; }
+        .mbsj-gold { background-color: #EEB902; }
+        .mbsj-gold-text { color: #EEB902; }
+        .mbsj-border-gold { border-color: #EEB902; }
+        .pulse-live { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- BAR PEMERINTAH ATAS -->
+    <div class="w-full bg-gray-950 text-white text-[11px] py-1.5 px-4 md:px-8 flex justify-between items-center border-b border-gray-800">
+        <div class="flex items-center space-x-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-red-500 pulse-live"></span>
+            <span class="font-medium text-gray-400">Sistem PBT Terpadu:</span> 
+            <span class="mbsj-gold-text font-bold uppercase tracking-wide">Majlis Bandaraya Subang Jaya</span>
+        </div>
+        <div class="hidden sm:flex space-x-4 text-gray-400">
+            <span><i class="fa-solid fa-clock mr-1"></i> <span id="clock">--:--:-- PM</span></span>
+            <span><i class="fa-solid fa-shield-halved mr-1 text-emerald-500"></i> Koneksi Aman SSL</span>
+        </div>
+    </div>
+
+    <!-- NAVBAR UTAMA -->
+    <header class="mbsj-navy text-white shadow-xl border-b-4 mbsj-border-gold sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row justify-between items-center">
+            
+            <!-- Tata Letak Logo dan Nama Aplikasi -->
+            <div class="flex items-center space-x-4 mb-3 md:mb-0">
+                <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center border-2 mbsj-border-gold shadow-lg transform hover:scale-105 transition">
+                    <i class="fa-solid fa-city text-2xl text-blue-900"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-extrabold tracking-tight flex items-center">
+                        MBSJ <span class="mbsj-gold-text ml-1.5 font-light">JALAN & SALURAN AIR PINTAR</span>
+                    </h1>
+                    <p class="text-[10px] tracking-widest text-emerald-400 uppercase font-bold">
+                        Dasbor Pemantauan Real-time PBT • USJ, Subang Jaya & Bandar Sunway
+                    </p>
+                </div>
+            </div>
+
+            <!-- Indikator Status Aliran Data -->
+            <div class="flex flex-wrap gap-2 items-center">
+                <div class="flex items-center space-x-2 bg-black/40 px-3.5 py-1.5 rounded-full border border-gray-700">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span id="status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                    </span>
+                    <span id="status-text" class="text-[11px] font-mono font-bold text-green-400 uppercase tracking-wider">ALIRAN SSE: MENGHUBUNGKAN</span>
+                </div>
+                <div id="reconnect-btn" class="hidden">
+                    <button onclick="initStreamConnection()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-[11px] px-3 py-1.5 rounded-full transition flex items-center">
+                        <i class="fa-solid fa-arrows-rotate mr-1 animate-spin"></i> Hubungkan Ulang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- WADAH KONTEN UTAMA -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- BANNER SELAMAT DATANG & PANEL TINDAKAN -->
+        <div class="mb-6 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <div class="flex items-center space-x-2">
+                    <span class="bg-blue-100 text-blue-900 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full">Sistem Utama Pengaduan</span>
+                    <span class="bg-purple-100 text-purple-900 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full">Wilayah: Subang</span>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 mt-2">Pusat Kendali Operasi Infrastruktur MBSJ</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Sistem memproses isyarat sensor IoT micro:bit dan laporan masyarakat secara langsung melalui EventSource Stream API.</p>
+            </div>
+            <div class="flex space-x-2 self-stretch md:self-auto">
+                <button onclick="clearLogs()" class="flex-1 md:flex-none text-xs bg-red-50 hover:bg-red-100 text-red-700 font-bold px-4 py-2.5 rounded-xl transition border border-red-200 flex items-center justify-center">
+                    <i class="fa-solid fa-trash-can mr-1.5"></i> Hapus Catatan
+                </button>
+                <button onclick="triggerDemoMode()" class="flex-1 md:flex-none text-xs bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold px-4 py-2.5 rounded-xl transition shadow-sm flex items-center justify-center">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Simulasi Data Otomatis
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL SIMULASI LIVE DEMO -->
+        <div class="mb-8 bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-2xl shadow-xl p-6 border-b-4 border-amber-400 relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-10 pointer-events-none transform translate-x-12 -translate-y-6">
+                <i class="fa-solid fa-satellite-dish text-[220px]"></i>
+            </div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center space-x-2 mb-3">
+                    <span class="bg-amber-400 text-slate-900 text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">SIMULATOR DATA ALIRAN</span>
+                    <h3 class="text-xs font-semibold text-amber-300 tracking-wide uppercase">Simulator Sensor IoT &amp; Panel Kendali</h3>
+                </div>
+                
+                <h4 class="text-lg font-bold mb-1">Uji Integrasi Aliran Data</h4>
+                <p class="text-xs text-slate-300 max-w-2xl mb-4">Gunakan tombol simulasi di bawah ini untuk mengirimkan sampel data pengaduan/sensor secara instan guna menguji pemrosesan real-time sistem.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Simulasi Peristiwa Pothole -->
+                    <button onclick="injectSimulatedSnapshot('pothole', '9.81_Gforce_USJ10', 'retakan_jalan_USJ4')" class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl p-3 text-left transition hover:scale-[1.02] flex items-start space-x-3">
+                        <span class="p-2 bg-red-500 text-white rounded-lg text-sm"><i class="fa-solid fa-road-barrier"></i></span>
+                        <div>
+                            <span class="block text-xs font-bold text-red-400">Simulasi Jalan Berlubang</span>
+                            <span class="block text-[10px] text-slate-300 mt-0.5">2 Peristiwa Pothole</span>
+                        </div>
+                    </button>
+                    
+                    <!-- Simulasi Peristiwa Saluran Tersumbat -->
+                    <button onclick="injectSimulatedSnapshot('drain_level', '95_persen_USJ4', 'penyumbatan_saluran_SS15')" class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl p-3 text-left transition hover:scale-[1.02] flex items-start space-x-3">
+                        <span class="p-2 bg-cyan-500 text-white rounded-lg text-sm"><i class="fa-solid fa-droplet"></i></span>
+                        <div>
+                            <span class="block text-xs font-bold text-cyan-400">Simulasi Saluran Air</span>
+                            <span class="block text-[10px] text-slate-300 mt-0.5">2 Penyumbatan Saluran</span>
+                        </div>
+                    </button>
+
+                    <!-- Simulasi Peristiwa Diagnostik -->
+                    <button onclick="injectSimulatedSnapshot('wifi', 'haloxx', 'sensor_cahaya_88')" class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl p-3 text-left transition hover:scale-[1.02] flex items-start space-x-3">
+                        <span class="p-2 bg-gray-500 text-white rounded-lg text-sm"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                        <div>
+                            <span class="block text-xs font-bold text-gray-300">Simulasi Diagnostik</span>
+                            <span class="block text-[10px] text-slate-300 mt-0.5">Sinyal WiFi &amp; Sensor</span>
+                        </div>
+                    </button>
+
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-center">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">ID Peranti IoT:</span>
+                        <span class="text-xs font-mono font-bold text-slate-200 mt-0.5 truncate" id="stream-address">velozzqtminsuut</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRID METRIK STATISTIK -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            
+            <!-- Kartu 1: Total Laporan -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Peristiwa Terdeteksi</span>
+                    <h3 id="count-total" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+                    <span class="text-[10px] text-slate-500 block mt-1"><i class="fa-solid fa-arrows-up-down text-blue-500"></i> Laporan masuk keseluruhan</span>
+                </div>
+                <div class="p-3.5 bg-blue-50 text-blue-900 rounded-2xl">
+                    <i class="fa-solid fa-server text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Kartu 2: Penghitung Pothole -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-wider block">Kerusakan Jalan (Pothole)</span>
+                    <h3 id="count-pothole" class="text-3xl font-extrabold text-red-600 mt-1">0</h3>
+                    <span class="text-[10px] text-red-500 font-medium block mt-1"><i class="fa-solid fa-circle-exclamation"></i> Perlu Penanganan Segera</span>
+                </div>
+                <div class="p-3.5 bg-red-50 text-red-600 rounded-2xl">
+                    <i class="fa-solid fa-road text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Kartu 3: Penghitung Saluran Air -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <span class="text-[10px] font-bold text-cyan-600 uppercase tracking-wider block">Saluran Tersumbat / Mampet</span>
+                    <h3 id="count-drain" class="text-3xl font-extrabold text-cyan-600 mt-1">0</h3>
+                    <span class="text-[10px] text-cyan-500 font-medium block mt-1"><i class="fa-solid fa-droplet"></i> Risiko Banjir Luapan</span>
+                </div>
+                <div class="p-3.5 bg-cyan-50 text-cyan-600 rounded-2xl">
+                    <i class="fa-solid fa-water text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Kartu 4: Diagnostik Lainnya -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-center justify-between hover:shadow-md transition">
+                <div>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pesan Umum / Diagnostik</span>
+                    <h3 id="count-other" class="text-3xl font-extrabold text-slate-600 mt-1">0</h3>
+                    <span class="text-[10px] text-slate-500 block mt-1"><i class="fa-solid fa-microchip"></i> Isyarat Status Sistem</span>
+                </div>
+                <div class="p-3.5 bg-slate-100 text-slate-600 rounded-2xl">
+                    <i class="fa-solid fa-signal text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- FORMULIR PENGADUAN PUBLIK & INFORMASI SOP (2 KOLOM LAYOUT) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- FORMULIR PENGADUAN PUBLIK (2/3 Lebar pada Layar Lebar) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                <div class="flex items-center space-x-2.5 mb-4 pb-3 border-b border-slate-100">
+                    <div class="p-2 bg-amber-100 text-amber-800 rounded-lg">
+                        <i class="fa-solid fa-file-pen text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">Formulir Pengaduan Masyarakat (Online)</h3>
+                        <p class="text-xs text-slate-500">Laporkan langsung kerusakan jalan atau saluran tersumbat di area Subang Jaya Anda</p>
+                    </div>
+                </div>
+
+                <form id="public-complaint-form" onsubmit="handleFormSubmission(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Pelapor <span class="text-red-500">*</span></label>
+                            <input type="text" id="form-name" required placeholder="Masukkan nama lengkap Anda" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Telepon Kontak <span class="text-red-500">*</span></label>
+                            <input type="tel" id="form-phone" required placeholder="Contoh: +6012345678" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-900">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Lokasi Kejadian (Area/Jalan) <span class="text-red-500">*</span></label>
+                            <select id="form-location" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white">
+                                <option value="">-- Pilih Wilayah Subang --</option>
+                                <option value="USJ 4, Subang Jaya">USJ 4</option>
+                                <option value="USJ 9, Subang Jaya">USJ 9</option>
+                                <option value="USJ 11, Subang Jaya">USJ 11</option>
+                                <option value="SS15 Commercial Area">SS15</option>
+                                <option value="Persiaran Kewajipan">Persiaran Kewajipan</option>
+                                <option value="Bandar Sunway Area">Bandar Sunway</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kategori Masalah <span class="text-red-500">*</span></label>
+                            <select id="form-category" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white">
+                                <option value="">-- Pilih Jenis Kerusakan --</option>
+                                <option value="pothole">Jalan Berlubang (Pothole)</option>
+                                <option value="drain_level">Saluran Air Tersumbat (Clogged Drain)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan Tambahan / Deskripsi Masalah <span class="text-red-500">*</span></label>
+                        <textarea id="form-details" required rows="2" placeholder="Tuliskan deskripsi kondisi di lapangan secara detail (misal: lubang sedalam 10cm, dll)" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-900"></textarea>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-blue-900 hover:bg-blue-950 text-white font-extrabold text-xs px-6 py-3 rounded-xl transition shadow-md flex items-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kirim Laporan Pengaduan</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- PANEL INFORMASI TINDAKAN & SOP (1/3 Lebar pada Layar Lebar) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center space-x-2 mb-3">
+                        <i class="fa-solid fa-shield-halved text-emerald-600 text-lg"></i>
+                        <h3 class="font-bold text-slate-900 text-sm">Prosedur Penanganan MBSJ</h3>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-3">
+                        Setelah laporan pengaduan berhasil divalidasi oleh sistem pemantauan PBT Subang Jaya, klasifikasi tingkat risiko prioritas akan segera ditentukan.
+                    </p>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Tim Pemeliharaan Jalan Raya &amp; Dinas Pekerjaan Saluran Air MBSJ akan dikerahkan langsung ke lokasi pengaduan guna melakukan perbaikan struktural dalam estimasi waktu kurang dari 24 jam.
+                    </p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Hubungi Layanan Darurat PBT:</span>
+                    <span class="text-sm text-blue-900 font-extrabold font-mono flex items-center">
+                        <i class="fa-solid fa-phone mr-1.5 text-amber-500"></i>
+                        <span>1-800-88-MBSJ (6275)</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOG JALAN UTAMA DAN PEMANTAUAN -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            
+            <!-- Header Panel Log Pengaduan -->
+            <div class="px-6 py-4.5 mbsj-navy text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-live"></span>
+                    <div>
+                        <h3 class="font-extrabold text-sm tracking-wide">SENARAI PERISTIWA DAN ADUAN AKTIF</h3>
+                        <p class="text-[10px] text-slate-300">Pemantauan Aliran Peristiwa Secara Real-time</p>
+                    </div>
+                </div>
+                
+                <!-- Filter Kategori Cepat -->
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="text-[11px] text-slate-300 self-center font-bold mr-1">Tapis:</span>
+                    <button onclick="filterLogs('ALL')" id="filter-btn-all" class="px-3 py-1 rounded-lg bg-amber-400 text-slate-900 font-bold hover:bg-amber-300 transition">
+                        Semua
+                    </button>
+                    <button onclick="filterLogs('POTHOLE')" id="filter-btn-pothole" class="px-3 py-1 rounded-lg bg-slate-800 text-white font-semibold hover:bg-slate-700 transition">
+                        Jalan Berlubang
+                    </button>
+                    <button onclick="filterLogs('DRAIN')" id="filter-btn-drain" class="px-3 py-1 rounded-lg bg-slate-800 text-white font-semibold hover:bg-slate-700 transition">
+                        Saluran Air
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Antarmuka Pengaduan -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-100 text-sm">
+                    <thead class="bg-slate-50 font-bold text-slate-600 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="px-6 py-4 text-left">Waktu Log</th>
+                            <th class="px-6 py-4 text-left">Nama Peristiwa (Event Name)</th>
+                            <th class="px-6 py-4 text-left">Nilai Peristiwa (Event Value)</th>
+                            <th class="px-6 py-4 text-center">Tindakan / Penugasan PBT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaints-log-body" class="divide-y divide-slate-100 bg-white text-xs">
+                        <!-- Baris tunggu bawaan sistem -->
+                        <tr id="no-data-row">
+                            <td colspan="4" class="px-6 py-16 text-center text-slate-400">
+                                <div class="flex flex-col items-center justify-center space-y-3 font-sans">
+                                    <i class="fa-solid fa-satellite-dish text-5xl pulse-live text-slate-300"></i>
+                                    <div class="max-w-md">
+                                        <h4 class="text-slate-800 font-bold text-sm">Sistem sedia menunggu data stream!</h4>
+                                        <p class="text-xs text-slate-400 mt-1">Gunakan formulir aduan publik di atas, panel simulator, atau hubungkan perangkat keras micro:bit Anda untuk memicu laporan langsung.</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Keterangan Status Kaki Tabel -->
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500 font-sans">
+                <div>
+                    Tampilan dibatasi hingga <strong class="text-slate-700 font-semibold">50 riwayat peristiwa terakhir</strong> (Penyesuaian otomatis untuk stabilitas performa dasbor).
+                </div>
+                <div class="font-mono text-[11px]" id="counter-summary">
+                    Jalan Berlubang: 0 | Saluran Air: 0
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER KEPATUHAN STRUKTURAL -->
+    <footer class="mt-16 bg-slate-950 text-slate-400 text-xs border-t-4 border-amber-400 font-sans">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <p class="font-extrabold text-slate-200 text-sm mb-2 uppercase tracking-wider">Majlis Bandaraya Subang Jaya</p>
+                <p class="leading-relaxed text-slate-400">Persiaran Perpaduan, USJ 5, 47610 Subang Jaya, Selangor Darul Ehsan.</p>
+                <p class="mt-2 text-[11px] font-mono font-bold text-amber-500">Pusat Layanan Terpadu: 03-8024 7700</p>
+            </div>
+            <div class="md:text-right flex flex-col justify-between items-start md:items-end gap-3">
+                <p>&copy; 2026 Majlis Bandaraya Subang Jaya (MBSJ). Hak Cipta Terpelihara.</p>
+                <p class="text-slate-500 text-[10px]">Aplikasi ini bertindak sebagai medium live-visualisasi berasaskan suapan EventStream Pihak Berkuasa Tempatan Subang.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGIKA INTERAKSI & SISTEM PEMROSES DATA -->
+    <script>
+        // Penghitung data internal dasbor
+        let counts = {
+            total: 0,
+            pothole: 0,
+            drain: 0,
+            other: 0
+        };
+
+        // Cache selektor elemen DOM
+        const elTotal = document.getElementById('count-total');
+        const elPothole = document.getElementById('count-pothole');
+        const elDrain = document.getElementById('count-drain');
+        const elOther = document.getElementById('count-other');
+        const logBody = document.getElementById('complaints-log-body');
+        const noDataRow = document.getElementById('no-data-row');
+        
+        const statusPing = document.getElementById('status-ping');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const reconnectBtn = document.getElementById('reconnect-btn');
+
+        let activeFilter = 'ALL';
+        let logList = []; // Daftar penyimpanan lokal peristiwa aktif
+
+        // Endpoint penampung data SSE Workers
+        const rawUrl = "https://microbit-backend.velozz.workers.dev/v1/app/devices/velozzqtminsuut/stream?deviceId=velozzqtminsuut";
+
+        // Pembaruan waktu jam jam operasional dasbor
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: true });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let eventSourceInstance = null;
+
+        // Memulai koneksi Server-Sent Events (SSE)
+        function initStreamConnection() {
+            if (eventSourceInstance) {
+                eventSourceInstance.close();
+            }
+
+            console.log("Menghubungkan ke aliran data:", rawUrl);
+            statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500";
+            statusPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75";
+            statusText.innerText = "MENGHUBUNGKAN...";
+            statusText.className = "text-[11px] font-mono font-bold text-yellow-500";
+            reconnectBtn.classList.add('hidden');
+
+            eventSourceInstance = new EventSource(rawUrl);
+
+            // Ketika aliran data terkoneksi sukses
+            eventSourceInstance.onopen = function() {
+                console.log("Koneksi Aliran SSE Berhasil!");
+                statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500";
+                statusPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+                statusText.innerText = "ALIRAN SSE: AKTIF";
+                statusText.className = "text-[11px] font-mono font-bold text-emerald-400";
+                reconnectBtn.classList.add('hidden');
+            };
+
+            // Menangani ralat atau pemutusan koneksi aliran data
+            eventSourceInstance.onerror = function(err) {
+                console.error("Kesalahan sambungan atau terputus:", err);
+                statusDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500";
+                statusPing.className = "hidden";
+                statusText.innerText = "KONEKSI TERPUTUS";
+                statusText.className = "text-[11px] font-mono font-bold text-red-500 pulse-live";
+                reconnectBtn.classList.remove('hidden');
+            };
+
+            // Mendengar saluran pengiriman standar
+            eventSourceInstance.onmessage = function(event) {
+                processMessagePayload(event.data, "Saluran IoT (Live)");
+            };
+
+            // Mendengar peristiwa spesifik 'snapshot'
+            eventSourceInstance.addEventListener('snapshot', function(event) {
+                console.log("Menangkap paket snapshot khusus dari saluran data.");
+                processMessagePayload(event.data, "Saluran Snapshot (Live)");
+            });
+
+            // Fallback penangkap saluran
+            eventSourceInstance.addEventListener('message', function(event) {
+                processMessagePayload(event.data, "Saluran IoT (Live)");
+            });
+        }
+
+        // Memproses kiriman data pesan mentah (Mengurai data recentEvents jika tersedia)
+        function processMessagePayload(rawText, sourceTag = "Saluran") {
+            if (!rawText || rawText.trim() === "") return;
+
+            let parsedData = null;
+            let incomingEvents = [];
+
+            try {
+                parsedData = JSON.parse(rawText);
+
+                // Memeriksa keberadaan tatasusunan 'recentEvents'
+                if (parsedData.recentEvents && Array.isArray(parsedData.recentEvents)) {
+                    incomingEvents = parsedData.recentEvents.map(ev => ({
+                        name: ev.name || "N/A",
+                        value: ev.value || "N/A",
+                        createdAt: ev.createdAt || null
+                    }));
+                } 
+                // Fallback ke latestEvent tunggal
+                else if (parsedData.latestEvent) {
+                    incomingEvents.push({
+                        name: parsedData.latestEvent.name || "N/A",
+                        value: parsedData.latestEvent.value || "N/A",
+                        createdAt: parsedData.latestEvent.createdAt || null
+                    });
+                }
+                // Fallback ke penampung status
+                else if (parsedData.state && parsedData.state.lastEventName) {
+                    incomingEvents.push({
+                        name: parsedData.state.lastEventName,
+                        value: parsedData.state.lastEventValue,
+                        createdAt: parsedData.state.updatedAt || null
+                    });
+                }
+                // Fallback ke objek datar sederhana
+                else if (parsedData.name && parsedData.value) {
+                    incomingEvents.push({
+                        name: parsedData.name,
+                        value: parsedData.value,
+                        createdAt: null
+                    });
+                }
+            } catch (e) {
+                // Penguraian langsung jika format data berupa string mentah
+                incomingEvents.push({
+                    name: "Data Kasar",
+                    value: rawText,
+                    createdAt: null
+                });
+            }
+
+            // Memasukkan setiap laporan secara individual ke dalam baris dasbor
+            incomingEvents.forEach(evt => {
+                ingestIndividualEvent(evt.name, evt.value, evt.createdAt, sourceTag);
+            });
+        }
+
+        // Menyaring data peristiwa dan menyimpannya ke dalam sistem memori dasbor
+        function ingestIndividualEvent(eventName, eventValue, eventTime, sourceTag) {
+            // Menyingkirkan indikator baris kosong saat laporan masuk
+            if (noDataRow && document.getElementById('no-data-row')) {
+                document.getElementById('no-data-row').remove();
+            }
+
+            let evaluationBuffer = (eventName + " " + eventValue).toLowerCase();
+            let matchedCategory = 'OTHER';
+
+            // Klasifikasi berdasarkan kata kunci pemicu utama
+            if (
+                evaluationBuffer.includes('pothole') || 
+                evaluationBuffer.includes('lubang') || 
+                evaluationBuffer.includes('accel') || 
+                evaluationBuffer.includes('gegaran') || 
+                evaluationBuffer.includes('g-force') ||
+                evaluationBuffer.includes('jalan berlubang') ||
+                eventName.toLowerCase().includes('pothole')
+            ) {
+                matchedCategory = 'POTHOLE';
+            } else if (
+                evaluationBuffer.includes('drain') || 
+                evaluationBuffer.includes('longkang') || 
+                evaluationBuffer.includes('sumbat') || 
+                evaluationBuffer.includes('water') || 
+                evaluationBuffer.includes('clogged') || 
+                evaluationBuffer.includes('limpah') ||
+                evaluationBuffer.includes('banjir') ||
+                eventName.toLowerCase().includes('drain') ||
+                eventName.toLowerCase().includes('water')
+            ) {
+                matchedCategory = 'DRAIN';
+            }
+
+            // Memperbarui hitungan statistik
+            counts.total++;
+            counts[matchedCategory.toLowerCase()]++;
+
+            // Sinkronisasi elemen statistik dasbor
+            elTotal.innerText = counts.total;
+            elPothole.innerText = counts.pothole;
+            elDrain.innerText = counts.drain;
+            elOther.innerText = counts.other;
+
+            // Memformulasikan penunjuk waktu
+            let formattedTimestamp = "";
+            if (eventTime) {
+                try {
+                    const parsedDate = new Date(eventTime);
+                    formattedTimestamp = parsedDate.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                } catch (err) {
+                    formattedTimestamp = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                }
+            } else {
+                formattedTimestamp = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+
+            // Memasukkan entri data ke barisan riwayat log
+            const logItem = {
+                id: Date.now() + Math.random(),
+                timestamp: formattedTimestamp,
+                eventName: eventName,
+                eventValue: eventValue,
+                source: sourceTag,
+                category: matchedCategory
+            };
+
+            // Batasi tumpukan data riwayat log hanya sampai 50 entri demi menjaga memori
+            logList.unshift(logItem);
+            if (logList.length > 50) {
+                logList.pop();
+            }
+
+            renderLogTable();
+            updateDiagnosticSummary();
+        }
+
+        // Melakukan rendering ulang visualisasi tabel log berdasarkan kategori tapis aktif
+        function renderLogTable() {
+            logBody.innerHTML = "";
+
+            const filtered = logList.filter(item => {
+                if (activeFilter === 'ALL') return true;
+                return item.category === activeFilter;
+            });
+
+            if (filtered.length === 0) {
+                logBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-400 font-sans">
+                            Belum ada laporan aktif dalam saringan penyaringan sesi ini.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                // Menentukan indikator ikon visual aduan
+                let iconHTML = '';
+                if (item.category === 'POTHOLE') {
+                    iconHTML = `<span class="text-red-600 mr-2"><i class="fa-solid fa-triangle-exclamation"></i></span>`;
+                } else if (item.category === 'DRAIN') {
+                    iconHTML = `<span class="text-cyan-600 mr-2"><i class="fa-solid fa-droplet"></i></span>`;
+                } else {
+                    iconHTML = `<span class="text-slate-400 mr-2"><i class="fa-solid fa-circle-info"></i></span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/70 transition duration-100";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-slate-500 font-mono text-xs">${item.timestamp}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2.5 py-1 bg-slate-900 text-amber-400 font-bold rounded-lg text-[10px] uppercase font-mono">${escapeHTML(item.eventName)}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            ${iconHTML}
+                            <span class="text-slate-700 font-semibold block bg-slate-100/80 px-2.5 py-1.5 rounded-lg border border-slate-200/40 truncate max-w-lg" title="${escapeHTML(item.eventValue)}">
+                                ${escapeHTML(item.eventValue)}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <button onclick="dispatchAction(this, '${item.category}')" class="inline-flex items-center bg-blue-900 hover:bg-amber-500 text-white hover:text-slate-950 font-bold text-[11px] px-3.5 py-2 rounded-lg transition shadow-sm border border-transparent font-sans">
+                            <i class="fa-solid fa-paper-plane mr-1.5"></i> Agih Siasatan
+                        </button>
+                    </td>
+                `;
+                logBody.appendChild(tr);
+            });
+        }
+
+        // Mengirimkan tugas pengaduan ke tim teknis PBT di lapangan
+        function dispatchAction(btn, category) {
+            btn.disabled = true;
+            btn.className = "inline-flex items-center bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-[11px] px-3.5 py-2 rounded-lg cursor-not-allowed font-sans";
+            btn.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i> Telah Ditugaskan`;
+            showToast(`Laporan ${category} berhasil didistribusikan kepada unit reaksi cepat MBSJ di lapangan!`);
+        }
+
+        // Menampilkan pesan pop-up konfirmasi sukses tindakan di sudut kanan bawah
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 bg-slate-900 text-white font-semibold text-xs px-5 py-3 rounded-xl shadow-2xl border border-slate-700 z-50 transform translate-y-10 opacity-0 transition duration-300 flex items-center space-x-3 font-sans";
+            toast.innerHTML = `
+                <span class="p-1.5 bg-emerald-500 text-slate-950 rounded-lg text-[10px]"><i class="fa-solid fa-check"></i></span>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.className = toast.className.replace("translate-y-10 opacity-0", "translate-y-0 opacity-100");
+            }, 10);
+
+            setTimeout(() => {
+                toast.className = toast.className.replace("translate-y-0 opacity-100", "translate-y-10 opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // Pengolahan data pengaduan formulir publik secara interaktif
+        function handleFormSubmission(event) {
+            event.preventDefault();
+
+            // Mendapatkan nilai dari elemen input formulir
+            const reporterName = document.getElementById('form-name').value.trim();
+            const contactPhone = document.getElementById('form-phone').value.trim();
+            const issueLocation = document.getElementById('form-location').value;
+            const issueCategory = document.getElementById('form-category').value;
+            const issueDetails = document.getElementById('form-details').value.trim();
+
+            if (!reporterName || !contactPhone || !issueLocation || !issueCategory || !issueDetails) {
+                showToast("Harap lengkapi semua bidang wajib di formulir!");
+                return;
+            }
+
+            // Merancang pesan peristiwa deskriptif
+            const eventValString = `Laporan dari ${reporterName} (${contactPhone}) di ${issueLocation}: "${issueDetails}"`;
+
+            // Memicu pengolahan aduan ke dalam dasbor utama
+            ingestIndividualEvent(issueCategory, eventValString, new Date().toISOString(), "Aduan Publik (Form)");
+
+            // Reset data isian formulir
+            document.getElementById('public-complaint-form').reset();
+            showToast("Sukses! Laporan Pengaduan Anda telah dikirim dan tercatat di dasbor.");
+        }
+
+        // Menyuntikkan sampel snapshot multi-peristiwa tiruan
+        function injectSimulatedSnapshot(event1Name, event1Val, event2Val) {
+            const mockSnapshot = {
+                deviceId: "velozzqtminsuut",
+                state: {
+                    apiKey: "velozzqtminsuut",
+                    lastEventName: event1Name,
+                    lastEventValue: event1Val,
+                    lastSeenAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                },
+                latestEvent: {
+                    id: crypto.randomUUID ? crypto.randomUUID() : "uuid-111",
+                    apiKey: "velozzqtminsuut",
+                    name: event1Name,
+                    value: event1Val,
+                    createdAt: new Date().toISOString()
+                },
+                recentEvents: [
+                    {
+                        id: crypto.randomUUID ? crypto.randomUUID() : "uuid-222",
+                        apiKey: "velozzqtminsuut",
+                        name: event1Name,
+                        value: event1Val,
+                        createdAt: new Date(Date.now() - 5000).toISOString()
+                    },
+                    {
+                        id: crypto.randomUUID ? crypto.randomUUID() : "uuid-333",
+                        apiKey: "velozzqtminsuut",
+                        name: event1Name === "pothole" ? "pothole_warning" : "drain_clog",
+                        value: event2Val,
+                        createdAt: new Date().toISOString()
+                    }
+                ]
+            };
+            processMessagePayload(JSON.stringify(mockSnapshot), "Simulator (Snapshot)");
+        }
+
+        // Loop otomatis pengiriman pengaduan sensor lapangan buatan
+        let demoInterval = null;
+        function triggerDemoMode() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+                demoInterval = null;
+                showToast("Demo otomatis dinonaktifkan.");
+                return;
+            }
+
+            showToast("Memulai Simulasi Laporan Sensor Lapangan!");
+            runSampleBroadcast();
+
+            demoInterval = setInterval(() => {
+                runSampleBroadcast();
+            }, 4000);
+        }
+
+        function runSampleBroadcast() {
+            const index = Math.floor(Math.random() * sampleReports.length);
+            const report = sampleReports[index];
+            injectSimulatedSnapshot(report.name, report.val1, report.val2);
+        }
+
+        const sampleReports = [
+            { name: "pothole", val1: "gforce_tinggi_1.85g_USJ9", val2: "retakan_jalan_USJ11" },
+            { name: "drain_level", val1: "tinggi_kapasitas_95_USJ4", val2: "penumpukan_lumpur_SS15" },
+            { name: "wifi", val1: "sinyal_stabil_45dBm", val2: "ping_rtt_24ms" },
+            { name: "pothole_warning", val1: "lubang_jalan_dalam_Sunway", val2: "amblesan_reported_USJ2" },
+            { name: "water_level", val1: "peringatan_saluran_lrt_subang", val2: "banjir_luapan_Persiaran_Kewajipan" }
+        ];
+
+        // Pengolahan menu filter data log dasbor
+        function filterLogs(category) {
+            activeFilter = category;
+            
+            // Konfigurasi visual tombol tapis aktif
+            ['all', 'pothole', 'drain'].forEach(cat => {
+                const btn = document.getElementById(`filter-btn-${cat}`);
+                if (cat.toUpperCase() === category) {
+                    btn.className = "px-3 py-1 rounded-lg bg-amber-400 text-slate-900 font-bold transition";
+                } else {
+                    btn.className = "px-3 py-1 rounded-lg bg-slate-800 text-white font-semibold hover:bg-slate-700 transition";
+                }
+            });
+
+            renderLogTable();
+        }
+
+        // Menghapus data histori sesi dasbor
+        function clearLogs() {
+            logList = [];
+            counts = { total: 0, pothole: 0, drain: 0, other: 0 };
+            
+            elTotal.innerText = 0;
+            elPothole.innerText = 0;
+            elDrain.innerText = 0;
+            elOther.innerText = 0;
+
+            logBody.innerHTML = `
+                <tr id="no-data-row">
+                    <td colspan="4" class="px-6 py-12 text-center text-slate-400 font-sans">
+                        Histori laporan dibersihkan. Sila kirim pengaduan baru melalui formulir atau panel simulator.
+                    </td>
+                </tr>
+            `;
+            updateDiagnosticSummary();
+        }
+
+        function updateDiagnosticSummary() {
+            document.getElementById('counter-summary').innerText = `Potholes: ${counts.pothole} | Drains: ${counts.drain}`;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Menjalankan inisialisasi aliran data SSE saat halaman siap dimuat
+        window.onload = function() {
+            initStreamConnection();
+        };
+    </script>
+</body>
+</html>
