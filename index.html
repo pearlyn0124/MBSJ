@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBSJ Smart Aduan - Portal Pengurusan Aduan Infrastruktur</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mbsj: {
+              blue: '#002D62',     /* Royal Navy Blue */
+              yellow: '#FFCC00',   /* Bright MBSJ Gold */
+              darkBlue: '#001F43', /* Darker Navy */
+              goldLight: '#FFF2CC',/* Light Yellow highlight */
+              neutralGray: '#F4F6F9',
+              accentRed: '#D9534F'
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js for high fidelity visual insights -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @keyframes ping-custom {
+      0% { transform: scale(1); opacity: 1; }
+      75%, 100% { transform: scale(2); opacity: 0; }
+    }
+    .animate-ping-custom {
+      animation: ping-custom 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden relative">
+
+  <!-- MOBILE SIDEBAR OVERLAY BACKDROP -->
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 z-30 hidden md:hidden transition-opacity duration-300"></div>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-72 bg-mbsj-blue text-white flex flex-col justify-between shadow-2xl z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+    <div>
+      <!-- Brand Logo / Name Header with side-by-side layout -->
+      <div class="p-4 bg-mbsj-darkBlue border-b border-blue-900/50 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center bg-white p-1.5 rounded-lg shadow-inner gap-1.5 shrink-0">
+            <!-- Selangor State Logo -->
+            <img src="selangor logo.jpg" alt="Negeri Selangor" class="h-9 w-auto object-contain" onerror="this.onerror=null; this.src='https://pearlyn0124.github.io/MBSJ/selangor%20logo.jpg';">
+            <!-- Small Vertical Divider -->
+            <div class="h-6 w-px bg-slate-200"></div>
+            <!-- MBSJ Logo -->
+            <img src="mbsj logo.png" alt="MBSJ" class="h-9 w-auto object-contain" onerror="this.onerror=null; this.src='https://pearlyn0124.github.io/MBSJ/mbsj%20logo.webp';">
+          </div>
+          <!-- Portal Title next to logos -->
+          <div class="min-w-0">
+            <h1 class="font-extrabold tracking-wider text-xs text-mbsj-yellow truncate">MBSJ SMART ADUAN</h1>
+            <p class="text-[7px] text-slate-300 uppercase tracking-wider font-semibold leading-tight">PORTAL PENGURUSAN ADUAN INFRASTRUKTUR</p>
+          </div>
+        </div>
+        <!-- Mobile Sidebar Close Button -->
+        <button onclick="toggleSidebar()" class="md:hidden text-white hover:text-mbsj-yellow p-1 rounded">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="mt-6 px-4 space-y-1.5">
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 bg-white/10 text-white">
+          <i class="fa-solid fa-chart-line w-5 text-mbsj-yellow"></i>
+          <span>Ringkasan Eksekutif</span>
+        </button>
+
+        <button onclick="switchTab('complaints')" id="btn-complaints" class="tab-btn w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-white/5 hover:text-white">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-envelope-open-text w-5"></i>
+            <span>Senarai Aduan</span>
+          </div>
+          <span id="badge-active-complaints" class="bg-mbsj-yellow text-mbsj-blue text-[11px] font-bold px-2 py-0.5 rounded-full shadow">8</span>
+        </button>
+
+        <!-- LIVE CAMERA AI TAB -->
+        <button onclick="switchTab('iot-monitoring')" id="btn-iot-monitoring" class="tab-btn w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 text-slate-300 hover:bg-white/5 hover:text-white">
+          <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-video w-5 text-emerald-400 animate-pulse"></i>
+            <span>Pemonitoran Kamera AI</span>
+          </div>
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- User Profile & Log Out Footer -->
+    <div class="p-4 border-t border-blue-900/50 bg-mbsj-darkBlue/50">
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="h-10 w-10 rounded-full bg-mbsj-yellow/20 border border-mbsj-yellow flex items-center justify-center">
+          <span class="font-bold text-mbsj-yellow text-sm">P1</span>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold text-white">Pentadbir MBSJ 1</h4>
+          <p class="text-xs text-slate-400">Pusat Kawalan Operasi</p>
+        </div>
+      </div>
+      <button onclick="logOut()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg text-xs font-semibold flex items-center justify-center space-x-2 transition-colors shadow">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Log Keluar Portal</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN APP AREA -->
+  <main class="flex-1 flex flex-col overflow-hidden w-full">
+    
+    <!-- TOP NAVBAR -->
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-8 z-10 shadow-sm">
+      <div class="flex items-center space-x-3 md:space-x-4">
+        <!-- Hamburger Menu Button for Mobile -->
+        <button onclick="toggleSidebar()" class="md:hidden p-2 -ml-2 text-slate-500 hover:text-mbsj-blue hover:bg-slate-100 rounded-lg focus:outline-none" aria-label="Toggle Navigation">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+        <h2 id="current-tab-title" class="text-base md:text-xl font-bold text-mbsj-blue truncate">Ringkasan Eksekutif</h2>
+        <span class="text-slate-300 hidden sm:inline">|</span>
+        <span id="current-date-time" class="text-[10px] md:text-xs font-medium text-slate-500 hidden sm:inline">Khamis, 2 Julai 2026, 10:22 PM</span>
+      </div>
+      
+      <div class="flex items-center space-x-4 md:space-x-6">
+        <!-- Quick Stats Widget -->
+        <div class="hidden md:flex items-center space-x-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 text-emerald-700 text-xs font-semibold">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>94.5% Kes Selesai Bulan Ini</span>
+        </div>
+
+        <!-- Notification Bell -->
+        <button class="relative p-2 text-slate-500 hover:text-mbsj-blue hover:bg-slate-100 rounded-full transition-colors">
+          <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
+          <i class="fa-regular fa-bell text-lg"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT CONTAINERS -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+      
+      <!-- ================= TAB 1: EXECUTIVE DASHBOARD ================= -->
+      <section id="tab-content-dashboard" class="tab-pane space-y-6 md:space-y-8">
+        <!-- Statistics Widgets Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Aduan Masuk (Hari Ini)</p>
+              <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-mbsj-blue">24</h3>
+              <span class="text-emerald-500 text-xs font-semibold flex items-center mt-2">
+                <i class="fa-solid fa-arrow-trend-up mr-1"></i> +12% vs Semalam
+              </span>
+            </div>
+            <div class="bg-blue-50 p-3.5 md:p-4 rounded-xl text-mbsj-blue">
+              <i class="fa-solid fa-file-circle-plus text-xl md:text-2xl"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Dalam Siasatan/Tindakan</p>
+              <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-amber-500">8</h3>
+              <span class="text-slate-400 text-xs font-semibold flex items-center mt-2">
+                <i class="fa-regular fa-clock mr-1"></i> Sedang diproses skuad
+              </span>
+            </div>
+            <div class="bg-amber-50 p-3.5 md:p-4 rounded-xl text-amber-500">
+              <i class="fa-solid fa-spinner text-xl md:text-2xl animate-spin-slow"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Selesai (Bulan Ini)</p>
+              <h3 class="text-2xl md:text-3xl font-extrabold mt-1 text-emerald-500">142</h3>
+              <span class="text-emerald-500 text-xs font-semibold flex items-center mt-2">
+                <i class="fa-solid fa-check mr-1"></i> Kadar pematuhan SLA 98%
+              </span>
+            </div>
+            <div class="bg-emerald-50 p-3.5 md:p-4 rounded-xl text-emerald-500">
+              <i class="fa-solid fa-circle-check text-xl md:text-2xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Dashboard Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-bold text-mbsj-blue text-sm md:text-base">Aliran Aduan Bulanan (2026)</h4>
+              <span class="text-xs text-slate-400">Kemas Kini Automatik</span>
+            </div>
+            <div class="h-64 md:h-80 relative">
+              <canvas id="chartAduanBulanan"></canvas>
+            </div>
+          </div>
+          <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+              <h4 class="font-bold text-mbsj-blue mb-4 text-sm md:text-base">Aduan Mengikut Kategori</h4>
+              <div class="h-56 md:h-60 relative flex items-center justify-center">
+                <canvas id="chartKategoriAduan"></canvas>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-400 text-center">
+              Pecahan aduan kerosakan infrastruktur awam
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: COMPLAINTS LIST ================= -->
+      <section id="tab-content-complaints" class="tab-pane hidden space-y-6">
+        <!-- Advanced Filtering Panel -->
+        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+          <div class="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center">
+            <input type="text" id="search-complaint" oninput="filterComplaints()" placeholder="Cari No Rujukan / Jalan / Deskripsi..." class="border border-slate-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-mbsj-blue w-full sm:w-64">
+            
+            <select id="filter-category" onchange="filterComplaints()" class="border border-slate-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-mbsj-blue bg-white">
+              <option value="Semua">Semua Kategori</option>
+              <option value="Jalan Raya & Premis">Jalan Raya & Premis</option>
+              <option value="Lampu Isyarat & Jalan">Lampu Isyarat & Jalan</option>
+              <option value="Saluran & Perparitan">Saluran & Perparitan</option>
+              <option value="Pembersihan Awam">Pembersihan Awam</option>
+            </select>
+
+            <select id="filter-priority" onchange="filterComplaints()" class="border border-slate-200 px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-mbsj-blue bg-white">
+              <option value="Semua">Semua Bahaya</option>
+              <option value="Kritikal">Kritikal (SLA &lt; 12 Jam)</option>
+              <option value="Sederhana">Sederhana (SLA &lt; 24 Jam)</option>
+              <option value="Rendah">Rendah (SLA &lt; 48 Jam)</option>
+            </select>
+          </div>
+          <button onclick="openComplaintModal()" class="bg-mbsj-blue hover:bg-mbsj-darkBlue text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center space-x-2 transition-colors shadow">
+            <i class="fa-solid fa-plus"></i>
+            <span>Daftar Aduan Baharu</span>
+          </button>
+        </div>
+
+        <!-- Interactive Complaints Area -->
+        <!-- Desktop Table (hidden on mobile) -->
+        <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold tracking-wider border-b border-slate-100">
+                  <th class="py-4 px-6">ID & Tarikh</th>
+                  <th class="py-4 px-6">Butiran Pengadu & Kategori</th>
+                  <th class="py-4 px-6">Alamat / Lokasi</th>
+                  <th class="py-4 px-6">Tahap Bahaya</th>
+                  <th class="py-4 px-6">Skuad Bertanggungjawab</th>
+                  <th class="py-4 px-6">Status Semasa</th>
+                  <th class="py-4 px-6 text-right">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody id="complaints-table-body" class="text-sm font-medium divide-y divide-slate-100">
+                <!-- Rendered dynamically inside JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Mobile Card-based Layout (hidden on desktop) -->
+        <div id="complaints-mobile-cards" class="grid grid-cols-1 gap-4 md:hidden">
+          <!-- Rendered dynamically inside JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: LIVE CAMERA AI MONITORING ================= -->
+      <section id="tab-content-iot-monitoring" class="tab-pane hidden space-y-6">
+        
+        <!-- Real-Time SSE Log (Kamera AI) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="p-4 md:p-6 border-b border-slate-100 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <div>
+              <h4 class="font-extrabold text-mbsj-blue text-base md:text-lg">Log Peranti & Pengecaman Kamera AI (Live EventStream)</h4>
+              <p class="text-xs text-slate-400 mt-1">Mengemas kini automatik mengikut isyarat server-sent events daripada pekerja Cloudflare.</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3">
+              <!-- SSE Live Pulse Status Badge -->
+              <span id="stream-badge" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                <span id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                <span id="status-text">Menyambung...</span>
+              </span>
+              
+              <!-- Refresh stream button -->
+              <button onclick="connectToStream()" class="bg-mbsj-blue hover:bg-mbsj-darkBlue text-white px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 shadow">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Muat Semula Stream</span>
+              </button>
+
+              <button onclick="clearEventLogs()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-lg text-xs font-bold transition-all" title="Bersihkan log jadual">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Desktop Table (hidden on mobile) -->
+          <div class="hidden md:block overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold tracking-wider border-b border-slate-100">
+                  <th class="py-4 px-6">ID Transaksi</th>
+                  <th class="py-4 px-6">Nama Kamera</th>
+                  <th class="py-4 px-6">Jenis Peristiwa / Analitis AI</th>
+                  <th class="py-4 px-6">Nilai Terpapar / Tahap</th>
+                  <th class="py-4 px-6">Masa Dilaporkan (UTC+8)</th>
+                  <th class="py-4 px-6 text-center">Status Pemprosesan</th>
+                </tr>
+              </thead>
+              <tbody id="iot-logs-table-body" class="text-sm font-medium divide-y divide-slate-100">
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-slate-400 text-xs">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                      <i class="fa-solid fa-spinner animate-spin text-2xl text-mbsj-blue"></i>
+                      <span>Menunggu isyarat stream daripada pelayan...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card-based Layout (hidden on desktop) -->
+          <div id="iot-mobile-cards" class="grid grid-cols-1 gap-4 md:hidden p-4 bg-slate-50/50">
+            <div class="py-8 text-center text-slate-400 text-xs bg-white rounded-2xl border border-slate-100 shadow-sm">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <i class="fa-solid fa-spinner animate-spin text-2xl text-mbsj-blue"></i>
+                <span>Menunggu isyarat stream...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- POPUP REGISTER COMPLAINT MODAL -->
+  <div id="complaint-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 md:p-6 space-y-4 animate-scaleUp overflow-y-auto max-h-[90vh] custom-scrollbar">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h4 class="font-bold text-mbsj-blue text-base md:text-lg">Pendaftaran Aduan Awam</h4>
+        <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      
+      <form id="complaint-form" class="space-y-4 text-xs font-semibold" onsubmit="submitNewComplaint(event)">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-slate-500">Nama Pengadu</label>
+            <input type="text" id="comp-name" required class="w-full border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-mbsj-blue">
+          </div>
+          <div class="space-y-1">
+            <label class="text-slate-500">No. Telefon</label>
+            <input type="text" id="comp-phone" required class="w-full border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-mbsj-blue">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-slate-500">Kategori Aduan</label>
+          <select id="comp-category" class="w-full border border-slate-200 p-2.5 rounded-lg bg-white focus:outline-none">
+            <option value="Jalan Raya & Premis">Jalan Raya & Premis</option>
+            <option value="Lampu Isyarat & Jalan">Lampu Isyarat & Jalan</option>
+            <option value="Saluran & Perparitan">Saluran & Perparitan</option>
+            <option value="Pembersihan Awam">Pembersihan Awam</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-slate-500">Zon / Mukim</label>
+            <select id="comp-zone" class="w-full border border-slate-200 p-2.5 rounded-lg bg-white focus:outline-none">
+              <option value="Subang Jaya Utama (SS12-SS19)">Subang Jaya Utama (SS12-SS19)</option>
+              <option value="USJ 1 - USJ 22">USJ 1 - USJ 22</option>
+              <option value="Putra Heights">Putra Heights</option>
+              <option value="Sunway / Bandar Sunway">Sunway / Bandar Sunway</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="text-slate-500">Tahap Bahaya</label>
+            <select id="comp-priority" class="w-full border border-slate-200 p-2.5 rounded-lg bg-white focus:outline-none">
+              <option value="Rendah">Rendah</option>
+              <option value="Sederhana">Sederhana</option>
+              <option value="Kritikal">Kritikal</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-slate-500">Alamat Kejadian</label>
+          <input type="text" id="comp-address" required class="w-full border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-mbsj-blue">
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-slate-500">Penerangan / Keterangan Aduan</label>
+          <textarea id="comp-description" rows="3" required class="w-full border border-slate-200 p-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-mbsj-blue"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
+          <button type="button" onclick="closeComplaintModal()" class="bg-slate-100 text-slate-600 px-4 py-2.5 rounded-lg hover:bg-slate-200 transition-all">Batal</button>
+          <button type="submit" class="bg-mbsj-blue text-white px-5 py-2.5 rounded-lg hover:bg-mbsj-darkBlue transition-all shadow">Hantar Aduan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CUSTOM FLOATING POPUP NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 left-6 sm:left-auto bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <div id="toast-icon-bg" class="bg-emerald-500 text-white p-1.5 rounded-full flex items-center justify-center">
+      <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+    </div>
+    <span id="toast-message" class="text-xs font-semibold"></span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC & SSE CONNECTIVITY -->
+  <script>
+    // Mock Complaint Database for high fidelity
+    let complaintsDatabase = [
+      { id: 'MBSJ-ADUAN-3829', reporter: 'Ahmad Faiz', category: 'Saluran & Perparitan', date: '2026-06-29', zone: 'Subang Jaya Utama (SS12-SS19)', address: 'Jalan SS 15/4, Subang Jaya', priority: 'Kritikal', squad: 'Alfa', status: 'Siasatan', description: 'Paip perparitan utama pecah menyebabkan banjir kilat menjejaskan kedai.' },
+      { id: 'MBSJ-ADUAN-4102', reporter: 'Tan Mei Ling', category: 'Lampu Isyarat & Jalan', date: '2026-06-30', zone: 'USJ 1 - USJ 22', address: 'Persiaran Kewajipan, USJ 9', priority: 'Sederhana', squad: 'Beta', status: 'Baru', description: 'Tiang lampu isyarat condong ke jalan selepas dilanggar lori malam semalam.' },
+      { id: 'MBSJ-ADUAN-2941', reporter: 'K. Ganesan', category: 'Jalan Raya & Premis', date: '2026-06-25', zone: 'Putra Heights', address: 'Jalan Putra Indah 9/1A', priority: 'Rendah', squad: 'Gamma', status: 'Dalam Tindakan', description: 'Lubang jalan raya besar di persimpangan masuk utama taman perumahan.' },
+      { id: 'MBSJ-ADUAN-3112', reporter: 'Sarah Othman', category: 'Pembersihan Awam', date: '2026-06-28', zone: 'Sunway / Bandar Sunway', address: 'Pangsapuri Lagoon Perdana', priority: 'Sederhana', squad: 'Beta', status: 'Selesai', description: 'Sampah domestik tidak dikutip melebihi 4 hari, bau busuk merebak.' }
+    ];
+
+    // Global Session Cache for IoT Event IDs & Sequences
+    const iotEventIdCache = new Map();
+    let nextIotIdSeq = 1;
+
+    // Global EventSource Tracker
+    let iotEventSource = null;
+
+    // Initialize Dashboard Elements on load
+    window.onload = function() {
+      // 1. Render Table
+      renderComplaintsTable();
+      // 2. Initialize Charts
+      initDashboardCharts();
+      // 3. Connect to the Server-Sent Events (SSE) Stream
+      connectToStream();
+    };
+
+    // Toggle Sidebar on mobile
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }
+
+    // Tab Switching Logic
+    function switchTab(tabName) {
+      const panes = document.querySelectorAll('.tab-pane');
+      panes.forEach(pane => pane.classList.add('hidden'));
+      
+      const targetPane = document.getElementById(`tab-content-${tabName}`);
+      if(targetPane) targetPane.classList.remove('hidden');
+
+      // Update Active Navigation Button Styling
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      tabBtns.forEach(btn => {
+        btn.classList.remove('bg-white/10', 'text-white');
+        btn.classList.add('text-slate-300');
+      });
+
+      const activeBtn = document.getElementById(`btn-${tabName}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('text-slate-300');
+        activeBtn.classList.add('bg-white/10', 'text-white');
+      }
+
+      // Update Header Text
+      const titleEl = document.getElementById('current-tab-title');
+      const titles = {
+        'dashboard': 'Ringkasan Eksekutif',
+        'complaints': 'Senarai Aduan Awam',
+        'iot-monitoring': 'Pemonitoran Kamera AI'
+      };
+      if(titleEl && titles[tabName]) titleEl.innerText = titles[tabName];
+
+      // Auto-close sidebar on mobile after selecting tab
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (window.innerWidth < 768) {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    // Connect to Cloudflare Live Worker Stream via Server-Sent Events (SSE)
+    function connectToStream() {
+      const statusIndicator = document.getElementById('status-indicator');
+      const statusText = document.getElementById('status-text');
+      const streamBadge = document.getElementById('stream-badge');
+
+      // Close previous connection if exists
+      if (iotEventSource) {
+        iotEventSource.close();
+      }
+
+      // Update Loading UI
+      statusText.innerText = 'Menyambung...';
+      statusIndicator.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+      streamBadge.className = 'flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/50';
+
+      // Start EventSource connection
+      const streamUrl = "https://microbit-backend.velozz.workers.dev/v1/app/devices/velozzqtminsuut/stream?deviceId=velozzqtminsuut";
+      iotEventSource = new EventSource(streamUrl);
+
+      const handleIncomingData = (eventData) => {
+        try {
+          const parsed = JSON.parse(eventData);
+          updateIotUI(parsed);
+          
+          // Connect Success UI State
+          statusText.innerText = 'Berhubung (Live)';
+          statusIndicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping-custom';
+          streamBadge.className = 'flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/50';
+        } catch (error) {
+          console.error("Error parsing event data:", error);
+        }
+      };
+
+      // Handle the snapshot event sent by Workers
+      iotEventSource.addEventListener('snapshot', function(e) {
+        handleIncomingData(e.data);
+      });
+
+      // Handle standard message events
+      iotEventSource.addEventListener('message', function(e) {
+        handleIncomingData(e.data);
+      });
+
+      iotEventSource.onopen = function() {
+        showToast("Sambungan live stream Kamera AI berjaya diaktifkan!", "success");
+      };
+
+      iotEventSource.onerror = function(err) {
+        console.error("SSE Connection Failed:", err);
+        statusText.innerText = 'Terputus';
+        statusIndicator.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        streamBadge.className = 'flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/50';
+      };
+    }
+
+    // Update Dashboard UI with parsed JSON from SSE
+    function updateIotUI(data) {
+      if (!data) return;
+
+      const tableBody = document.getElementById('iot-logs-table-body');
+      const mobileCards = document.getElementById('iot-mobile-cards');
+
+      if (data.recentEvents && data.recentEvents.length > 0) {
+        tableBody.innerHTML = '';
+        mobileCards.innerHTML = '';
+        
+        // 1. Sort ascending first (chronological order) to assign stable, incremental sequential IDs
+        const chronologicalEvents = [...data.recentEvents].sort((a, b) => {
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        });
+
+        // Loop chronologically to register/retrieve from our persistent session cache map
+        chronologicalEvents.forEach(evt => {
+          const cacheKey = `${evt.createdAt}_${evt.name}_${evt.value}`;
+          if (!iotEventIdCache.has(cacheKey)) {
+            // Sequential increment - oldest registered event stays ADUAN-001, next ADUAN-002, etc.
+            const formattedId = `ADUAN-${String(nextIotIdSeq).padStart(3, '0')}`;
+            iotEventIdCache.set(cacheKey, formattedId);
+            nextIotIdSeq++;
+          }
+        });
+
+        // 2. Sort descending (newest at the top) for rendering to perfectly match image_f8d496.jpg
+        const renderEventsList = [...data.recentEvents].sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        renderEventsList.forEach(evt => {
+          const formattedTime = new Date(evt.createdAt).toLocaleString('ms-MY');
+          
+          // Fetch the stable ID from our session cache map
+          const cacheKey = `${evt.createdAt}_${evt.name}_${evt.value}`;
+          const formattedId = iotEventIdCache.get(cacheKey) || `ADUAN-${String(nextIotIdSeq).padStart(3, '0')}`;
+          
+          // Determine Sensor Badge representation
+          let sensorBadge = '';
+          const lowerName = (evt.name || '').toLowerCase();
+          if (lowerName === 'wifi') {
+            sensorBadge = `<span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full border border-blue-100 flex items-center space-x-1.5 w-max">
+              <i class="fa-solid fa-wifi"></i><span>Isyarat Wi-Fi</span>
+            </span>`;
+          } else if (lowerName === 'light') {
+            sensorBadge = `<span class="bg-amber-50 text-amber-700 text-xs px-2.5 py-1 rounded-full border border-amber-100 flex items-center space-x-1.5 w-max">
+              <i class="fa-solid fa-lightbulb"></i><span>Keamatan Cahaya</span>
+            </span>`;
+          } else if (lowerName === 'motion' || lowerName === 'camera' || lowerName === 'ai' || lowerName === 'pothole') {
+            // High fidelity matching for Pothole as shown in image_f8d496.jpg
+            sensorBadge = `<span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full border border-slate-200 flex items-center space-x-1.5 w-max font-semibold">
+              <i class="fa-solid fa-microchip text-slate-500"></i><span>pothole</span>
+            </span>`;
+          } else {
+            sensorBadge = `<span class="bg-slate-50 text-slate-700 text-xs px-2.5 py-1 rounded-full border border-slate-100 flex items-center space-x-1.5 w-max">
+              <i class="fa-solid fa-microchip text-slate-500"></i><span>${evt.name}</span>
+            </span>`;
+          }
+
+          // Visual formatting mapping to mimic image_f8d496.jpg newline structures
+          let displayValue = evt.value || '';
+          if (displayValue.startsWith("Location:") && !displayValue.includes("<br>") && !displayValue.includes("\n")) {
+            // Match the layout: Location details on first line, date on second line
+            displayValue = displayValue.replace(/(\d{1,2}\/\d{1,2}\/\d{4})/g, '<br><span class="text-slate-500 font-normal">$1</span>');
+          }
+
+          // Populate Desktop Table
+          const rowHtml = `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-4 px-6 font-mono text-sm text-mbsj-blue font-bold select-all">${formattedId}</td>
+              <td class="py-4 px-6 text-slate-700 font-bold">MBSJ-KameraAI-01</td>
+              <td class="py-4 px-6">${sensorBadge}</td>
+              <td class="py-4 px-6 font-semibold text-slate-800 whitespace-pre-line leading-relaxed">${displayValue}</td>
+              <td class="py-4 px-6 text-slate-500 text-xs font-semibold">${formattedTime}</td>
+              <td class="py-4 px-6 text-center col-span-1">
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold">
+                  Selesai Diproses
+                </span>
+              </td>
+            </tr>
+          `;
+          tableBody.innerHTML += rowHtml;
+
+          // Populate Mobile Cards (Highly responsive fallback)
+          const cardHtml = `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="font-mono text-sm text-mbsj-blue font-bold">${formattedId}</span>
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                  Selesai Diproses
+                </span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-400 font-semibold">Nama Kamera:</span>
+                  <span class="text-slate-700 font-bold">MBSJ-KameraAI-01</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-400 font-semibold">Jenis Peristiwa:</span>
+                  <span>${sensorBadge}</span>
+                </div>
+                <div class="pt-2 border-t border-slate-100">
+                  <span class="text-slate-400 block font-semibold mb-1">Nilai Terpapar / Tahap:</span>
+                  <div class="bg-slate-50 p-3 rounded-xl text-slate-800 font-semibold text-xs whitespace-pre-line leading-relaxed border border-slate-100">
+                    ${displayValue}
+                  </div>
+                </div>
+              </div>
+              <div class="text-[10px] text-slate-400 text-right font-semibold">
+                Dilaporkan: ${formattedTime} (UTC+8)
+              </div>
+            </div>
+          `;
+          mobileCards.innerHTML += cardHtml;
+        });
+      } else {
+        const emptyState = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">Tiada data log event ditemui.</td></tr>`;
+        tableBody.innerHTML = emptyState;
+        mobileCards.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs bg-white rounded-2xl border border-slate-100 shadow-sm">Tiada data log event ditemui.</div>`;
+      }
+    }
+
+    // Clear event records table visually
+    function clearEventLogs() {
+      const tableBody = document.getElementById('iot-logs-table-body');
+      const mobileCards = document.getElementById('iot-mobile-cards');
+      const clearMsg = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">Semua log dibersihkan secara lokal. Menunggu event baharu...</td></tr>`;
+      tableBody.innerHTML = clearMsg;
+      mobileCards.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs bg-white rounded-2xl border border-slate-100 shadow-sm">Semua log dibersihkan secara lokal. Menunggu event baharu...</div>`;
+      showToast("Log pemonitoran dibersihkan.", "success");
+    }
+
+    // Toast Notifications System
+    function showToast(message, type = "success") {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      const toastIconBg = document.getElementById('toast-icon-bg');
+      const toastIcon = document.getElementById('toast-icon');
+
+      toastMsg.innerText = message;
+
+      if (type === "success") {
+        toastIconBg.className = "bg-emerald-500 text-white p-1.5 rounded-full flex items-center justify-center";
+        toastIcon.className = "fa-solid fa-circle-check";
+      } else {
+        toastIconBg.className = "bg-rose-500 text-white p-1.5 rounded-full flex items-center justify-center";
+        toastIcon.className = "fa-solid fa-triangle-exclamation";
+      }
+
+      toast.className = "fixed bottom-6 right-6 left-6 sm:left-auto bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 transform translate-y-0 opacity-100 transition-all duration-300 z-50";
+      
+      setTimeout(() => {
+        toast.className = "fixed bottom-6 right-6 left-6 sm:left-auto bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50";
+      }, 3500);
+    }
+
+    // Render Complaints Database into visual dashboard
+    function renderComplaintsTable() {
+      const tableBody = document.getElementById('complaints-table-body');
+      const mobileCards = document.getElementById('complaints-mobile-cards');
+      const searchVal = document.getElementById('search-complaint').value.toLowerCase();
+      const catVal = document.getElementById('filter-category').value;
+      const priorityVal = document.getElementById('filter-priority').value;
+
+      tableBody.innerHTML = '';
+      mobileCards.innerHTML = '';
+
+      let filtered = complaintsDatabase.filter(c => {
+        const matchesSearch = c.id.toLowerCase().includes(searchVal) || c.reporter.toLowerCase().includes(searchVal) || c.address.toLowerCase().includes(searchVal) || c.description.toLowerCase().includes(searchVal);
+        const matchesCat = (catVal === 'Semua') || (c.category === catVal);
+        const matchesPriority = (priorityVal === 'Semua') || (c.priority === priorityVal);
+        return matchesSearch && matchesCat && matchesPriority;
+      });
+
+      // Update Active Count Badges
+      const activeBadge = document.getElementById('badge-active-complaints');
+      activeBadge.innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        const emptyState = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">Tiada aduan padan dengan tapisan anda.</td></tr>`;
+        tableBody.innerHTML = emptyState;
+        mobileCards.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs bg-white rounded-2xl border border-slate-100 shadow-sm">Tiada aduan padan dengan tapisan anda.</div>`;
+        return;
+      }
+
+      filtered.forEach(comp => {
+        // Priority Badge Builder
+        let priorityBadge = '';
+        if (comp.priority === 'Kritikal') {
+          priorityBadge = '<span class="bg-rose-50 border border-rose-100 text-rose-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center space-x-1 w-max"><i class="fa-solid fa-fire animate-pulse"></i><span>Kritikal</span></span>';
+        } else if (comp.priority === 'Sederhana') {
+          priorityBadge = '<span class="bg-amber-50 border border-amber-100 text-amber-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center space-x-1 w-max"><i class="fa-solid fa-triangle-exclamation"></i><span>Sederhana</span></span>';
+        } else {
+          priorityBadge = '<span class="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center space-x-1 w-max"><i class="fa-solid fa-shield-halved"></i><span>Rendah</span></span>';
+        }
+
+        // Status Badge Builder
+        let statusBadge = '';
+        if (comp.status === 'Baru') {
+          statusBadge = '<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2.5 py-1 rounded-full">Daftar Baru</span>';
+        } else if (comp.status === 'Siasatan') {
+          statusBadge = '<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-full">Siasatan Skuad</span>';
+        } else if (comp.status === 'Dalam Tindakan') {
+          statusBadge = '<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-full">Dalam Tindakan</span>';
+        } else {
+          statusBadge = '<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full">Tindakan Selesai</span>';
+        }
+
+        // Desktop Table Row Addition
+        const tr = `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-4 px-6">
+              <span class="text-mbsj-blue font-bold block">${comp.id}</span>
+              <span class="text-[11px] text-slate-400 font-semibold block mt-0.5">${comp.date}</span>
+            </td>
+            <td class="py-4 px-6">
+              <span class="text-slate-800 font-bold block">${comp.reporter}</span>
+              <span class="text-xs text-slate-400 font-medium block mt-0.5">${comp.category}</span>
+            </td>
+            <td class="py-4 px-6">
+              <span class="text-slate-600 block line-clamp-1" title="${comp.address}">${comp.address}</span>
+              <span class="text-[11px] text-slate-400 font-medium block mt-0.5">${comp.zone}</span>
+            </td>
+            <td class="py-4 px-6">${priorityBadge}</td>
+            <td class="py-4 px-6">
+              <div class="flex items-center space-x-2">
+                <div class="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-[10px]">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+                <span class="text-slate-600 font-bold">Skuad ${comp.squad}</span>
+              </div>
+            </td>
+            <td class="py-4 px-6">${statusBadge}</td>
+            <td class="py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
+              <button onclick="printDispatchTicket('${comp.id}')" class="text-slate-400 hover:text-mbsj-blue p-1.5 hover:bg-slate-100 rounded-lg transition-colors" title="Print Ticket">
+                <i class="fa-solid fa-print"></i>
+              </button>
+              <button onclick="updateComplaintStatus('${comp.id}')" class="text-slate-400 hover:text-emerald-500 p-1.5 hover:bg-slate-100 rounded-lg transition-colors" title="Update Status">
+                <i class="fa-solid fa-check-double"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        tableBody.innerHTML += tr;
+
+        // Mobile Responsive Card Addition
+        const card = `
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-mbsj-blue font-extrabold text-sm block">${comp.id}</span>
+                <span class="text-[10px] text-slate-400 font-semibold block mt-0.5">${comp.date}</span>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+            <div class="space-y-3 text-xs">
+              <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider mb-0.5">Pengadu / Kategori</span>
+                <span class="text-slate-800 font-bold block">${comp.reporter}</span>
+                <span class="text-slate-500 text-[11px] block">${comp.category}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider mb-0.5">Alamat / Lokasi</span>
+                <span class="text-slate-700 block">${comp.address}</span>
+                <span class="text-slate-400 text-[11px] block mt-0.5">${comp.zone}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50">
+                <div>
+                  <span class="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider mb-1">Tahap Bahaya</span>
+                  ${priorityBadge}
+                </div>
+                <div>
+                  <span class="text-slate-400 block font-semibold text-[10px] uppercase tracking-wider mb-1">Pasukan</span>
+                  <div class="flex items-center space-x-1.5 text-slate-600 font-bold mt-1">
+                    <i class="fa-solid fa-users text-slate-400"></i>
+                    <span>Skuad ${comp.squad}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+              <button onclick="printDispatchTicket('${comp.id}')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 p-2.5 rounded-xl border border-slate-200 transition-colors" title="Print Ticket">
+                <i class="fa-solid fa-print"></i>
+              </button>
+              <button onclick="updateComplaintStatus('${comp.id}')" class="bg-mbsj-blue hover:bg-mbsj-darkBlue text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex-1 shadow-sm">
+                Selesai / Kemas Kini
+              </button>
+            </div>
+          </div>
+        `;
+        mobileCards.innerHTML += card;
+      });
+    }
+
+    // Execute local state filters
+    function filterComplaints() {
+      renderComplaintsTable();
+    }
+
+    // Simulated status cycle
+    function updateComplaintStatus(id) {
+      const foundIdx = complaintsDatabase.findIndex(c => c.id === id);
+      if (foundIdx !== -1) {
+        const statuses = ['Baru', 'Siasatan', 'Dalam Tindakan', 'Selesai'];
+        let currentIdx = statuses.indexOf(complaintsDatabase[foundIdx].status);
+        let nextIdx = (currentIdx + 1) % statuses.length;
+        
+        complaintsDatabase[foundIdx].status = statuses[nextIdx];
+        renderComplaintsTable();
+        showToast(`Kes ${id} berjaya dinaik taraf ke status [${statuses[nextIdx]}]!`, "success");
+      }
+    }
+
+    // Modal Control Logic
+    function openComplaintModal() {
+      document.getElementById('complaint-modal').classList.remove('hidden');
+    }
+
+    // Close complaint modal window
+    function closeComplaintModal() {
+      document.getElementById('complaint-modal').classList.add('hidden');
+    }
+
+    // Register a new mock complaint
+    function submitNewComplaint(e) {
+      e.preventDefault();
+      
+      const newId = `MBSJ-ADUAN-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newComp = {
+        id: newId,
+        reporter: document.getElementById('comp-name').value,
+        phone: document.getElementById('comp-phone').value,
+        category: document.getElementById('comp-category').value,
+        date: new Date().toISOString().split('T')[0],
+        zone: document.getElementById('comp-zone').value,
+        address: document.getElementById('comp-address').value,
+        priority: document.getElementById('comp-priority').value,
+        squad: 'Alfa', // Default assigned squad
+        status: 'Baru',
+        description: document.getElementById('comp-description').value
+      };
+
+      complaintsDatabase.unshift(newComp);
+      renderComplaintsTable();
+      closeComplaintModal();
+      document.getElementById('complaint-form').reset();
+      showToast(`Aduan baharu (${newId}) berjaya didaftarkan dalam rekod MBSJ!`, "success");
+    }
+
+    // Static Chart Initializations (Ringkasan Tab)
+    function initDashboardCharts() {
+      // Monthly Trend Chart
+      const monthlyCtx = document.getElementById('chartAduanBulanan').getContext('2d');
+      new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul'],
+          datasets: [
+            {
+              label: 'Kes Diterima',
+              data: [65, 82, 110, 94, 88, 125, 24],
+              borderColor: '#002D62',
+              backgroundColor: 'rgba(0, 45, 98, 0.05)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Kes Selesai',
+              data: [50, 75, 105, 92, 85, 115, 20],
+              borderColor: '#FFCC00',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 11 } } }
+          },
+          scales: {
+            y: { grid: { borderDash: [4, 4] } }
+          }
+        }
+      });
+
+      // Pie chart
+      const catCtx = document.getElementById('chartKategoriAduan').getContext('2d');
+      new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Jalan Raya', 'Lampu Isyarat', 'Perparitan', 'Pembersihan'],
+          datasets: [{
+            data: [40, 25, 20, 15],
+            backgroundColor: ['#002D62', '#FFCC00', '#D9534F', '#5CB85C'],
+            borderWidth: 2,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Poppins', size: 10 } } }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    // Interactive ticket printing framework
+    function printDispatchTicket(id) {
+      const comp = complaintsDatabase.find(c => c.id === id);
+      if (!comp) return;
+
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MBSJ Tiket Agihan Tugas - ${comp.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 30px; color: #333; }
+            .header { text-align: center; border-bottom: 3px double #002D62; padding-bottom: 15px; margin-bottom: 25px; }
+            .title { font-size: 22px; font-weight: bold; color: #002D62; }
+            .details { font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+            .section-title { font-weight: bold; margin-top: 15px; color: #333; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+          </style>
+        </head>
+        <body onload="window.print()">
+          <div class="header">
+            <div class="title">MAJLIS BANDARAYA SUBANG JAYA</div>
+            <div style="font-size:12px; margin-top:5px; font-weight:bold; color:#777;">TIKET INFRASTRUKTUR</div>
+          </div>
+          <div class="details">
+            <div class="section-title">BUTIRAN REKOD</div>
+            <strong>No Rujukan:</strong> ${comp.id}<br>
+            <strong>Kategori:</strong> ${comp.category}<br>
+            <strong>Tarikh Dilaporkan:</strong> ${comp.date}<br>
+            <strong>Mukim/Zon:</strong> ${comp.zone}<br>
+            <strong>Alamat:</strong> ${comp.address}<br>
+            
+            <div class="section-title">BUTIRAN BAHAYA & SKUAD</div>
+            <strong>Tahap Bahaya:</strong> ${comp.priority}<br>
+            <strong>Skuad Bertanggungjawab:</strong> Skuad ${comp.squad}<br>
+            
+            <div class="section-title">DESKRIPSI ADUAN</div>
+            <p>${comp.description}</p>
+          </div>
+        </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
+    function logOut() {
+      showToast("Log keluar berjaya. Sesi ditamatkan.", "error");
+    }
+  </script>
+</body>
+</html>
